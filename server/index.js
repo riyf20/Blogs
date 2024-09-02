@@ -29,7 +29,7 @@ app.use(cors(corsOptions));
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const debug = true; //used for global console debugging 
+const debug = false; //used for global console debugging 
 
 // creates connection
 const db = mysql.createConnection({

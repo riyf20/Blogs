@@ -1,0 +1,262 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  font-family: "Quicksand";
+  color: #2F4858;
+  background-color: lightgray;
+}
+
+/* Navbar */
+.navbar {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+  border-bottom: 1px solid black;
+}
+.navbar h1 {
+  color: #008B8B;
+}
+.navbar .links {
+  margin-left: auto;
+}
+.navbar a {
+  margin-left: 16px;
+  text-decoration: none;
+  padding: 6px;
+}
+.navbar a:hover {
+  color: #2F4858;
+}
+
+.content {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+/* Blog Preview */
+.blog-preview {
+  padding: 10px 16px;
+  margin: 20px 0;
+  border-bottom: 1px solid black;
+}
+.blog-preview:hover {
+  box-shadow: 10px 3px 5px rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+.blog-preview h2 {
+  font-size: 20px;
+  color: #008B8B;
+  margin-bottom: 8px;
+}
+
+button {
+  border-radius: 6px;
+  width: 15vh;
+  height: 5vh;
+  margin-top: 10px;
+}
+
+#deleteButton {
+  border-color: red;
+}
+
+#deleteButton:hover{
+  background-color: lightcoral;
+}
+
+.blog-preview a{ 
+  text-decoration: none;
+}
+
+.blog-details h2 {
+  font-size: 20px;
+  color: #2F4858;
+  margin-bottom: 10px;
+}
+
+.blog-details div {
+  margin: 20px 0;
+}
+
+.blog-details button {
+  background: #2F4858;
+  color: #fff;
+  border: 0;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Create */
+.create {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+.create label {
+  text-align: left;
+  display: block;
+  font-size: 20px;
+}
+.create h1 {
+  color: #2F4858;
+  margin-bottom: 30px;
+}
+.create input, .create textarea, .comment textarea {
+  width: 100%;
+  padding: 6px 10px;
+  margin: 10px 0;
+  box-sizing: border-box;
+  display: block;
+  height: 45px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.create textarea, .comment textarea {
+  height: 200px;
+  border: 2px solid #2F4858;
+  padding-top: 12px;
+} 
+.comment textarea {
+  height: 150px;
+}
+.create button {
+  background: #2F4858;
+  color: #fff;
+  border-radius: 10px;
+  height: 50px;
+  cursor: pointer;
+}
+.create button:hover {
+  scale: 1.1;
+  transition: 0.3s ease;
+}
+
+/* Not Found */
+
+.not-found a{ 
+  text-decoration: none;
+}
+
+.not-found *{
+  padding-bottom: 10px;
+}
+
+/* Login / Signup */
+.login, .signup{
+  display: grid;
+  align-content: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.signup h1{
+  margin-top: -30px;
+}
+
+.border, .signup-border {
+  border: 2px solid black;
+  padding: 30px;
+  border-radius: 10px;
+}
+
+.signup-border {
+  padding: 60px;
+}
+
+.login h1, .signup h1 {
+  display: flex;
+  justify-content: center;
+  font-size: 45px;
+  margin-bottom: 20px;
+}
+
+.container, .signup-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.signup-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.box input {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  height: 50px;
+  width: 300px;
+  border-radius: 10px;
+  font-size: 16px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.signup-box input {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 50px;
+  width: 300px;
+  border-radius: 10px;
+  font-size: 16px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.box button, .signup-container button {
+  background-color: #2F4858;
+  color: white;
+  font-size: medium;
+}
+
+.box .error {
+  margin-top: 15px;
+  color: red;
+}
+
+.signuplink, .loginLink {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  max-width: 600px;
+}
+
+/* Comment section */
+.nocomment {
+  margin-top: 10px;
+}
+
+.comment-item {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px; 
+
+}
+
+.comment-item p {
+  margin: 0; 
+  margin-left: 10px; 
+  flex-grow: 1; 
+}
+
+.comment-item button {
+  width: fit-content;
+  height: fit-content;
+  margin-left: auto; 
+}

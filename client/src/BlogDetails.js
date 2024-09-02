@@ -40,11 +40,15 @@ const BlogDetails = () => {
     }
   }, [blog, id, token, commentsUpdated]);
 
-
+// deletes blog + comments
   const handleClick = () => {
     // Endpoint: Delete blog [and its comments]
     fetch(`${API_BASE_URL}/api/blogs/delete/` + id, {
       method: 'DELETE',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
     })
     .then((response) => {
       if (!response.ok) {
@@ -58,6 +62,7 @@ const BlogDetails = () => {
     });
   };
 
+  // deletes comment
   const handleDeleteComment = (id, postid) => {
 
     const comment = {id, postid}
@@ -84,35 +89,30 @@ const BlogDetails = () => {
     });
   };
 
-  const handleComment = async (e) => {
-    e.preventDefault();
+  // posts comment
+  const handleComment = () => {
 
     const comment = { body, user, id };
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/blogs/${id}/comment`, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(comment)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        {debug && console.log('comment added!')}
-        // Add new comment to the already loaded comments
-        setComments([...comments, { body, author: user }]);
-        setBody('');
-      } else {
-        setError(data.message);
+    fetch(`${API_BASE_URL}/api/blogs/${id}/comment`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(comment)
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to delete the comment');
       }
-    } catch (error) {
-      console.error('Error:', error);
-      setError('An error occurred. Please try again.');
-    }
+      // Redirecting to home page after successful deletion
+      setComments([]); //clear comments --> reload
+      setCommentsUpdated(prev => !prev);
+    })
+    .catch((err) => {
+      console.error('Error deleting the comment:', err.message);
+    });
   };
 
   return (
@@ -156,7 +156,7 @@ const BlogDetails = () => {
             <hr />
             <div className="comment">
               <form
-                onSubmit={(e) => {
+                onSubmit={() => {
                   handleComment(); 
                 }}
               >

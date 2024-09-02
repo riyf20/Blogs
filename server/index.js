@@ -77,6 +77,7 @@ app.post('/api/login', (req, res) => {
 
 // Register new user
 app.post('/api/register', async (req, res) => {
+    console.log('register attempt');
     const { username, password, email, firstName, lastName } = req.body;
   
     try {
@@ -85,7 +86,7 @@ app.post('/api/register', async (req, res) => {
   
       // Store the user with the hashed password (and original just in case)
       db.query(
-        'INSERT INTO Users (`username`, `password_hash`, `password_txt`, `email`, `first_name`, `last_name`) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO Users (`username`, `password_hash`, `password_txt`, `email`, `first_name`, `last_name`) VALUES (?, ?, ?, ?, ?, ?)',
         [username, hashedPassword, password, email, firstName, lastName],
         (err, results) => {
           if (err) {

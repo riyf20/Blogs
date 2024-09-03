@@ -115,6 +115,15 @@ const BlogDetails = () => {
     });
   };
 
+  const formatText = (text) => {
+    return text.split('\n').map((line, index) => (
+      <span key={index}>
+        {line}
+        <br />
+      </span>
+    ));
+  };
+
   return (
     <div className="blog-details">
       {isLoading && <div>Loading...</div>}
@@ -128,7 +137,7 @@ const BlogDetails = () => {
         <article>
           <h2>{blog.title}</h2>
           <p>Written by: {blog.author}</p>
-          <div>{blog.body}</div>
+          <div>{formatText(blog.body)}</div>
           <div className="buttonholder">
             {user === blog.author && (
               <button onClick={handleClick}>Delete</button>

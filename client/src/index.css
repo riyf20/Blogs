@@ -82,6 +82,11 @@ button {
   margin: 20px 0;
 }
 
+.artbody{
+  gap: 10px;
+  line-height: 25px;
+}
+
 .blog-details button {
   background: #2F4858;
   color: #fff;
@@ -259,4 +264,16 @@ button {
   width: fit-content;
   height: fit-content;
   margin-left: auto; 
+}
+
+.portfolio {
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.2;
+}
+
+.portfolio:hover {
+  border: 2px solid black;
+  padding: 4px;
+  border-radius: 10px;
 }

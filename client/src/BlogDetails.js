@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import useFetch from "./useFetch";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 const debug = false;
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -117,11 +117,15 @@ const BlogDetails = () => {
 
   const formatText = (text) => {
     return text.split('\n').map((line, index) => (
-      <span key={index}>
-        {line}
-        <br />
-      </span>
+      <React.Fragment key={index}>
+        {index > 0 && <br />}
+        {parseHTML(line)}
+      </React.Fragment>
     ));
+  };
+
+  const parseHTML = (htmlString) => {
+    return <span dangerouslySetInnerHTML={{ __html: htmlString }} />;
   };
 
   return (
@@ -137,7 +141,7 @@ const BlogDetails = () => {
         <article>
           <h2>{blog.title}</h2>
           <p>Written by: {blog.author}</p>
-          <div>{formatText(blog.body)}</div>
+          <div className="artbody">{formatText(blog.body)}</div>
           <div className="buttonholder">
             {user === blog.author && (
               <button onClick={handleClick}>Delete</button>

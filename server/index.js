@@ -29,7 +29,7 @@ app.use(cors(corsOptions));
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const debug = true; //used for global console debugging 
+const debug = false; //used for global console debugging 
 
 // creates connection
 const db = mysql.createConnection({
@@ -48,7 +48,7 @@ db.connect((err) => {
 
 // Login user
 app.post('/api/login', (req, res) => {
-    console.log("logging in")
+    {debug && console.log("logging in")};
     const { username, password } = req.body;
   
     db.query('SELECT * FROM Users WHERE username = ?', [username], async (err, results) => {
@@ -78,7 +78,7 @@ app.post('/api/login', (req, res) => {
 
 // Register new user
 app.post('/api/register', async (req, res) => {
-    console.log('register attempt');
+    {debug && console.log('register attempt')};
     const { username, password, email, firstName, lastName } = req.body;
   
     try {
@@ -315,10 +315,10 @@ app.get('/api/blogs/:id/comments', (req, res) => {
   });
 });
 
-// { debug &&
-// app.listen(3001, () => {
-//    console.log('Server is running on port 3001')
-// });
-// };
+{ debug &&
+app.listen(3001, () => {
+   console.log('Server is running on port 3001')
+});
+};
 
 module.exports = app;

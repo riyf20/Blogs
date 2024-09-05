@@ -7,6 +7,7 @@ import Create from './Create';
 import BlogDetails from './BlogDetails';
 import Navbar from './Navbar';
 import NotFound from './NotFound';
+import { Analytics } from "@vercel/analytics/react"
 
 // used for global debugging
 const debug = false;
@@ -38,7 +39,9 @@ function App() {
             <Route path="/signup" element={<Signup onAuthSuccess={handleAuthSuccess} />} />
             {/* Redirect path from other pages */}
             <Route path="*" element={<Login onAuthSuccess={handleAuthSuccess} />} />
+            <Analytics />
           </Routes>
+          
         ) : (
           <>
             {/* user paths */}
@@ -49,12 +52,14 @@ function App() {
                 <Route path="/create" element={<Create onAuthSuccess={handleAuthSuccess}/>} />
                 <Route path="/blogs/:id" element={<BlogDetails/>} />
                 <Route path='*' element={<NotFound/>}></Route>
+                <Analytics />
               </Routes>
             </div>
           </>
         )}
       </div>
     </Router>
+    
   );
 }
 

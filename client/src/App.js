@@ -39,7 +39,6 @@ function App() {
             <Route path="/signup" element={<Signup onAuthSuccess={handleAuthSuccess} />} />
             {/* Redirect path from other pages */}
             <Route path="*" element={<Login onAuthSuccess={handleAuthSuccess} />} />
-            <Analytics />
           </Routes>
           
         ) : (
@@ -52,11 +51,11 @@ function App() {
                 <Route path="/create" element={<Create onAuthSuccess={handleAuthSuccess}/>} />
                 <Route path="/blogs/:id" element={<BlogDetails/>} />
                 <Route path='*' element={<NotFound/>}></Route>
-                <Analytics />
               </Routes>
             </div>
           </>
         )}
+        <Analytics />
       </div>
     </Router>
     

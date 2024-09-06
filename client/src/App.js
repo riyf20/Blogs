@@ -8,6 +8,7 @@ import BlogDetails from './BlogDetails';
 import Navbar from './Navbar';
 import NotFound from './NotFound';
 import { Analytics } from "@vercel/analytics/react"
+import Search from './Search';
 
 // used for global debugging
 const debug = false;
@@ -50,6 +51,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/create" element={<Create onAuthSuccess={handleAuthSuccess}/>} />
                 <Route path="/blogs/:id" element={<BlogDetails/>} />
+                <Route path="/search" element={<Search/>} />
                 <Route path='*' element={<NotFound/>}></Route>
               </Routes>
             </div>

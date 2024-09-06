@@ -12,7 +12,7 @@
   padding: 20px;
   display: flex;
   align-items: center;
-  max-width: 600px;
+  max-width: 1000px;
   margin: 0 auto;
   border-bottom: 1px solid black;
 }
@@ -21,6 +21,9 @@
 }
 .navbar .links {
   margin-left: auto;
+}
+.navbar Link{
+  cursor: pointer;
 }
 .navbar a {
   margin-left: 16px;
@@ -281,4 +284,52 @@ button {
   padding: 4px;
   transform: scale(1.2);
   transition: 0.4s;
+}
+
+/* Search page */
+.search{
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.search label {
+  text-align: left;
+  display: block;
+  font-size: 20px;
+}
+
+.search h1 {
+  color: #2F4858;
+  margin-bottom: 30px;
+}
+
+.search form div{
+  display: grid;
+  grid-template-columns: 25% 75%;
+  align-items: center;
+}
+
+.search input, .search select{
+  width: 100%;
+  padding: 6px 10px;
+  margin: 10px 0;
+  box-sizing: border-box;
+  display: block;
+  height: 45px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.search button {
+  background: #2F4858;
+  color: #fff;
+  border-radius: 10px;
+  height: 50px;
+  cursor: pointer;
+}
+
+.search button:hover {
+  scale: 1.1;
+  transition: 0.3s ease;
 }

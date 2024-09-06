@@ -19,6 +19,9 @@ const Navbar = ({ onAuthSuccess }) => {
         <nav className="navbar">
             <Link to="/"><h1>Blogs</h1></Link> 
             <div className="links">
+                <Link className="navlinks" to="/search" style={{
+                    borderRadius: "8px"
+                }}>Search</Link>
                 <Link className="navlinks" to="/create" style={{
                     borderRadius: "8px"
                 }}>New Blog</Link>

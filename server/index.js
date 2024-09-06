@@ -315,6 +315,29 @@ app.get('/api/blogs/:id/comments', (req, res) => {
   });
 });
 
+app.get('/api/search', (req, res) => {
+  const type = req.query.type;
+  const field = req.query.field;
+
+  if(type === 'comments') {
+    db.query(`SELECT * FROM Comments WHERE body LIKE '%${field}%'`, (err, results) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error during search [comments]' });
+      }
+      res.json(results);
+    });
+
+  } else {
+    db.query(`SELECT * FROM Blogs WHERE ${type} LIKE '%${field}%'`, (err, results) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error during search [blog]' });
+      }
+      res.json(results);
+    });
+  }
+
+})
+
 { debug &&
 app.listen(3001, () => {
    console.log('Server is running on port 3001')

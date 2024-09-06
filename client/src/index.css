@@ -35,7 +35,7 @@
 }
 
 .content {
-  max-width: 600px;
+  max-width: 800px;
   margin: 40px auto;
   padding: 20px;
 }
@@ -114,7 +114,7 @@ button {
   color: #2F4858;
   margin-bottom: 30px;
 }
-.create input, .create textarea, .comment textarea {
+.create input, .create textarea, .comment textarea, .editbox textarea {
   width: 100%;
   padding: 6px 10px;
   margin: 10px 0;
@@ -124,13 +124,18 @@ button {
   border-radius: 10px;
   font-size: 14px;
 }
-.create textarea, .comment textarea {
+.create textarea, .comment textarea, .editbox textarea {
   height: 200px;
   border: 2px solid #2F4858;
   padding-top: 12px;
 } 
 .comment textarea {
   height: 150px;
+}
+
+.editbox textarea {
+  height: 350px;
+  font-size: 16px;
 }
 .create button {
   background: #2F4858;
@@ -332,4 +337,16 @@ button {
 .search button:hover {
   scale: 1.1;
   transition: 0.3s ease;
+}
+
+.buttonholder button{
+  margin-right: 20px;
+}
+
+#deletebutton, #cancelbutton {
+  background: #DC143C;
+}
+
+#confirmbutton {
+  background: #228B22;
 }

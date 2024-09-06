@@ -15,6 +15,9 @@ const BlogDetails = () => {
   const [errorc, setError] = useState('');
   const [comments, setComments] = useState([]);
   const [commentsUpdated, setCommentsUpdated] = useState(false); 
+  const [edit, setEdit] = useState(false); 
+  const [editBody, setEditBody] = useState('');
+
 
   useEffect(() => {
     // Fetch existing comments for the blog
@@ -62,6 +65,15 @@ const BlogDetails = () => {
     });
   };
 
+  const handleEdit = () => {
+    setEditBody(blog.body);
+    if(edit) {
+      setEdit(false)
+    } else {
+      setEdit(true)
+    }
+  }
+
   // deletes comment
   const handleDeleteComment = (id, postid) => {
 
@@ -104,17 +116,40 @@ const BlogDetails = () => {
     })
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Failed to delete the comment');
+        throw new Error('Failed to post the comment');
       }
-      // Redirecting to home page after successful deletion
       setComments([]); //clear comments --> reload
       setCommentsUpdated(prev => !prev);
     })
     .catch((err) => {
-      console.error('Error deleting the comment:', err.message);
+      console.error('Error posting the comment:', err.message);
     });
   };
 
+  const handleEditConfirm = () => {
+    const edits = {editBody};
+    console.log(edits);
+    fetch(`${API_BASE_URL}/api/blogs/${id}/update`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(edits)
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to edit the post');
+      }
+      setEdit(false);
+      window.location.reload()
+    })
+    .catch((err) => {
+      console.error('Error posting the comment:', err.message);
+    });
+  }
+
+  // text formatting
   const formatText = (text) => {
     return text.split('\n').map((line, index) => (
       <React.Fragment key={index}>
@@ -124,6 +159,7 @@ const BlogDetails = () => {
     ));
   };
 
+  // html parsing
   const parseHTML = (htmlString) => {
     return <span dangerouslySetInnerHTML={{ __html: htmlString }} />;
   };
@@ -139,14 +175,49 @@ const BlogDetails = () => {
       }
       {blog && (
         <article>
-          <h2>{blog.title}</h2>
-          <p>Written by: {blog.author}</p>
-          <div className="artbody">{formatText(blog.body)}</div>
+          <div className="editbox">
+            <h2>{blog.title}</h2>
+            {
+              edit ? 
+              <>
+                <textarea 
+                  required
+                  rows={8}
+                  value={editBody}
+                  // placeholder={blog.body}
+                  onChange={(e) => setEditBody(e.target.value)}
+                >
+                </textarea>
+              </>
+              :
+              <>
+                
+                <p>Written by: {blog.author}</p>
+                <div className="artbody" >{formatText(blog.body)}</div>
+              </>
+            }
+          </div>
+
           <div className="buttonholder">
             {user === blog.author && (
-              <button onClick={handleClick}>Delete</button>
+              
+              edit===false ? 
+              (
+                <>
+                <button onClick={handleEdit}>Edit</button>
+                <button id="deletebutton" onClick={handleClick}>Delete</button>
+                </>
+              ) 
+              :
+              (
+                <>
+                <button id="cancelbutton" onClick={handleEdit}>Cancel</button>
+                <button id="confirmbutton" onClick={handleEditConfirm}>Confirm</button>
+                </>
+              )
             )}
           </div>
+
 
           <hr />
           {/* Display comments */}

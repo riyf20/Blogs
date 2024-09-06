@@ -23,6 +23,8 @@ const Search = () => {
         const field = query;
         if(queryType==="comments") {
             setComment(true)
+        } else {
+            setComment(false)
         }
 
         console.log(`${API_BASE_URL}/api/search?type=${queryType}&field=${encodeURIComponent(field)}`)

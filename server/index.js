@@ -315,6 +315,21 @@ app.get('/api/blogs/:id/comments', (req, res) => {
   });
 });
 
+app.post('/api/blogs/:id/update', (req, res) => {
+  const id = req.params.id;
+  const { editBody } = req.body; 
+
+  
+  // console.log(`UPDATE 'Blogs' set body=${editBody} where id=${id}`);
+  db.query('UPDATE `Blogs` set body=? where id=? ', [editBody, id], (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error fetching comments' });
+    }
+    res.json(results);
+  });
+
+})
+
 app.get('/api/search', (req, res) => {
   const type = req.query.type;
   const field = req.query.field;

@@ -1,18 +1,46 @@
-import { Link } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import React, { useEffect } from 'react';
+
 
 const Navbar = ({ onAuthSuccess }) => {
 
     const navigate = useNavigate();
 
-    const handleLogout = () => {
+    // Track the current location
+    const location = useLocation(); 
+
+    useEffect(() => {
+        const checkTokenExpiration = () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decodedToken = jwtDecode(token);
+            const currentTime = Date.now() / 1000;
+
+            if (decodedToken.exp < currentTime) {
+                // Token has expired
+                handleLogout(true);
+            }
+        }
+        };
+
+        // Check token expiration whenever location changes
+        checkTokenExpiration(); 
+
+  }, [location, navigate]);
+
+    const handleLogout = (expToken) => {
         // Remove the token from local storage
         localStorage.removeItem('token');
         localStorage.removeItem('user');
     
         // Redirect to the login page or homepage
-        onAuthSuccess()
-        navigate('/');
+        if (!expToken) {
+            onAuthSuccess()
+        } else {
+            window.location.reload()
+        }
+        navigate('/login');
       };
 
     return ( 

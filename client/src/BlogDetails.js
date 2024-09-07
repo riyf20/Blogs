@@ -17,6 +17,9 @@ const BlogDetails = () => {
   const [commentsUpdated, setCommentsUpdated] = useState(false); 
   const [edit, setEdit] = useState(false); 
   const [editBody, setEditBody] = useState('');
+  const [editComment, setEditComment] = useState(false); 
+  const [editCommentIndex, setEditCommentIndex] = useState(-1); 
+  const [editCommentBody, setCommentBody] = useState('');
 
 
   useEffect(() => {
@@ -41,7 +44,7 @@ const BlogDetails = () => {
       .then((data) => setComments(data))
       .catch((err) => console.error('Error fetching comments:', err));
     }
-  }, [blog, id, token, commentsUpdated]);
+  }, [blog, id, token, commentsUpdated, editComment]);
 
 // deletes blog + comments
   const handleClick = () => {
@@ -65,6 +68,7 @@ const BlogDetails = () => {
     });
   };
 
+  // toggles edit box
   const handleEdit = () => {
     setEditBody(blog.body);
     if(edit) {
@@ -126,9 +130,10 @@ const BlogDetails = () => {
     });
   };
 
+  // submits new edits
   const handleEditConfirm = () => {
     const edits = {editBody};
-    console.log(edits);
+    // console.log(edits);
     fetch(`${API_BASE_URL}/api/blogs/${id}/update`, {
       method: 'POST',
       headers: {
@@ -147,6 +152,38 @@ const BlogDetails = () => {
     .catch((err) => {
       console.error('Error posting the comment:', err.message);
     });
+  }
+
+  const handleCommentConfirm = (id, postid) => {
+    const comedits = {editCommentBody};
+    fetch(`${API_BASE_URL}/api/blogs/${postid}/${id}/update`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(comedits)
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to update the comment');
+      }
+      setEditComment(false);
+      // window.location.reload()
+    })
+    .catch((err) => {
+      console.error('Error updating the comment:', err.message);
+    });
+  }
+
+  const handleEditComment = (index) => {
+    setEditCommentIndex(index)
+
+    if(editComment) {
+      setEditComment(false)
+    } else {
+      setEditComment(true)
+    }
   }
 
   // text formatting
@@ -226,10 +263,39 @@ const BlogDetails = () => {
           {comments.length > 0 ? (
             comments.map((comment, index) => (
               <div key={index} className="comment-item">
-                <p>
-                  <strong>{comment.author}</strong>: {comment.body}
-                </p>
-                {comment.author === user && <button onClick={() => handleDeleteComment(comment.id, comment.postid)}>Delete</button> }
+
+                {editComment && index===editCommentIndex ? 
+                <>
+                  <textarea 
+                    required
+                    rows={3}
+                    value={editCommentBody}
+                    onChange={(e) => setCommentBody(e.target.value)}
+                  >
+                  </textarea>
+                  <div className="comment-buttonholder">
+                    <button id="cancelbutton" onClick={() => handleEditComment(index)}>Cancel</button> 
+                    <button id="confirmbutton" onClick={() => handleCommentConfirm(comment.id, comment.postid)}>Confirm</button> 
+                  </div>
+                </>
+                :
+                  <>
+                  <p>
+                    <strong>{comment.author}</strong>: {comment.body}
+                  </p>
+                  {comment.author === user &&
+                    <>
+                    <div className="comment-buttonholder">
+                      <button onClick={() => handleEditComment(index) & setCommentBody(comment.body)}>Edit</button> 
+                      <button id="deletebutton" onClick={() => handleDeleteComment(comment.id, comment.postid)}>Delete</button> 
+                    </div>
+                    </>
+                  }
+                  </>
+                }
+
+
+
               </div>
             ))
           ) : (

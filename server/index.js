@@ -319,16 +319,29 @@ app.post('/api/blogs/:id/update', (req, res) => {
   const id = req.params.id;
   const { editBody } = req.body; 
 
-  
-  // console.log(`UPDATE 'Blogs' set body=${editBody} where id=${id}`);
-  db.query('UPDATE `Blogs` set body=? where id=? ', [editBody, id], (err, results) => {
+    db.query('UPDATE `Blogs` set body=? where id=? ', [editBody, id], (err, results) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error fetching comments' });
+      }
+      res.json(results);
+    });
+
+})
+
+app.post('/api/blogs/:postid/:id/update', (req, res) => {
+  const postid = req.params.postid
+  const id = req.params.id
+  const {editCommentBody} = req.body;
+
+  db.query('UPDATE `Comments` set body=? where postid=? AND id=?', [editCommentBody, postid, id], (err, results) => {
     if (err) {
-      return res.status(500).json({ message: 'Error fetching comments' });
+      return res.status(500).json({ message: 'Error updating comments' });
     }
     res.json(results);
   });
-
 })
+
+
 
 app.get('/api/search', (req, res) => {
   const type = req.query.type;

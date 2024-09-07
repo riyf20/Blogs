@@ -114,7 +114,7 @@ button {
   color: #2F4858;
   margin-bottom: 30px;
 }
-.create input, .create textarea, .comment textarea, .editbox textarea {
+.create input, .create textarea, .comment textarea, .editbox textarea, .comment-item textarea {
   width: 100%;
   padding: 6px 10px;
   margin: 10px 0;
@@ -124,6 +124,11 @@ button {
   border-radius: 10px;
   font-size: 14px;
 }
+
+.comment-item textarea {
+  width: 60%;
+}
+
 .create textarea, .comment textarea, .editbox textarea {
   height: 200px;
   border: 2px solid #2F4858;
@@ -134,7 +139,7 @@ button {
 }
 
 .editbox textarea {
-  height: 350px;
+  height: 250px;
   font-size: 16px;
 }
 .create button {
@@ -258,7 +263,7 @@ button {
   display: flex;
   justify-content: space-between; 
   align-items: center;
-  padding: 10px; 
+  /* padding: 10px;  */
 
 }
 
@@ -339,14 +344,25 @@ button {
   transition: 0.3s ease;
 }
 
+.comment-buttonholder button {
+  margin-left: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-top: -10px;
+  margin-bottom: -10px;
+}
+
 .buttonholder button{
   margin-right: 20px;
+  font-size: 16px
 }
 
 #deletebutton, #cancelbutton {
   background: #DC143C;
+  
 }
 
 #confirmbutton {
   background: #228B22;
 }
+

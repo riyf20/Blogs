@@ -1,70 +1,34 @@
-# Getting Started with Create React App
+# Blog Website
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Welcome to my blog website! This platform allows users to share their thoughts through blog posts, interact with other users' content, and manage their own posts with ease. The site offers a seamless user experience, with efficient search functionality and secure data handling.
 
-## Available Scripts
+## 🚀 **Technologies and Dependencies**
+This project was built with a modern tech stack to ensure a robust, secure, and responsive experience.
 
-In the project directory, you can run:
+**Frontend**
+- **React**: Powers the user interface, enabling dynamic content rendering and smooth user interactions.
+- **React Router**: Facilitates seamless navigation across different pages of the website.
+- **jwt-decode**: Decodes JSON Web Tokens (JWT) on the client side for handling user authentication and secure access to features.
 
-### `npm start`
+**Backend**
+- **Node.js & Express**: Form the foundation of the backend, managing server-side logic and API routes.
+- **bcrypt**: Ensures secure user password hashing and storage.
+- **cors**: Enables cross-origin resource sharing, allowing the frontend and backend to communicate smoothly.
+- **jsonwebtoken**: Manages user authentication by generating and verifying JWTs.
+- **MySQL**: Serves as the relational database for storing user data, posts, and comments, hosted on AWS SQL Server for reliability and speed.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 📋 **Features**
+- User Authentication: Secure login and registration using JWT and bcrypt, ensuring user data protection.
+- Post Management: Users can create, edit, and delete their blog posts effortlessly.
+- Comment Interaction: Engage with other users by commenting on their posts, with options to edit or delete your own comments.
+- Search: Search for content by author, title, body, or even within comments, providing a comprehensive content discovery experience.
+- Seamless User Experience: The frontend and backend work in harmony to deliver fast, responsive, and secure interactions.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📦 **Deployment**
+This project is live! You can explore the blog website here: https://rf-blogs.vercel.app/ 
 
-### `npm test`
+## 📧 **Contact**
+If you have any questions, suggestions, or would like to connect, feel free to reach out!
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Email: rfard13@gmail.com
+LinkedIn: https://linkedin.com/in/riyan-fardin

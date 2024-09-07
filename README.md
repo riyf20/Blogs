@@ -31,4 +31,5 @@ This project is live! You can explore the blog website here: https://rf-blogs.ve
 If you have any questions, suggestions, or would like to connect, feel free to reach out!
 
 Email: rfard13@gmail.com
+
 LinkedIn: https://linkedin.com/in/riyan-fardin

@@ -1,3 +1,4 @@
+/* Global */
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
 
 * {
@@ -16,24 +17,30 @@
   margin: 0 auto;
   border-bottom: 1px solid black;
 }
+
 .navbar h1 {
   color: #008B8B;
 }
+
 .navbar .links {
   margin-left: auto;
 }
-.navbar Link{
+
+.navbar Link {
   cursor: pointer;
 }
+
 .navbar a {
   margin-left: 16px;
   text-decoration: none;
   padding: 6px;
 }
+
 .navbar a:hover {
   color: #2F4858;
 }
 
+/* Global Content */
 .content {
   max-width: 800px;
   margin: 40px auto;
@@ -46,37 +53,29 @@
   margin: 20px 0;
   border-bottom: 1px solid black;
 }
+
 .blog-preview:hover {
   box-shadow: 10px 3px 5px rgba(0,0,0,0.1);
   border-radius: 10px;
 }
+
 .blog-preview h2 {
   font-size: 20px;
   color: #008B8B;
   margin-bottom: 8px;
 }
 
-button {
-  border-radius: 6px;
-  width: 15vh;
-  height: 5vh;
-  margin-top: 10px;
-}
-
-#deleteButton {
-  border-color: red;
-}
-
-#deleteButton:hover{
-  background-color: lightcoral;
-}
-
-.blog-preview a{ 
+.blog-preview a { 
   text-decoration: none;
 }
 
+/* Blog Details */
+.blog-details {
+  margin-top: -40px;
+}
+
 .blog-details h2 {
-  font-size: 20px;
+  font-size: 26px;
   color: #2F4858;
   margin-bottom: 10px;
 }
@@ -85,7 +84,7 @@ button {
   margin: 20px 0;
 }
 
-.artbody{
+.artbody {
   gap: 10px;
   line-height: 25px;
 }
@@ -99,21 +98,29 @@ button {
   cursor: pointer;
 }
 
-/* Create */
+.blog-details button:hover {
+  scale: 1.1;
+  transition: 0.3s ease;
+}
+
+/* Create Blog */
 .create {
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
 }
+
 .create label {
   text-align: left;
   display: block;
   font-size: 20px;
 }
+
 .create h1 {
   color: #2F4858;
   margin-bottom: 30px;
 }
+
 .create input, .create textarea, .comment textarea, .editbox textarea, .comment-item textarea {
   width: 100%;
   padding: 6px 10px;
@@ -125,23 +132,12 @@ button {
   font-size: 14px;
 }
 
-.comment-item textarea {
-  width: 60%;
-}
-
 .create textarea, .comment textarea, .editbox textarea {
   height: 200px;
   border: 2px solid #2F4858;
   padding-top: 12px;
 } 
-.comment textarea {
-  height: 150px;
-}
 
-.editbox textarea {
-  height: 250px;
-  font-size: 16px;
-}
 .create button {
   background: #2F4858;
   color: #fff;
@@ -149,30 +145,30 @@ button {
   height: 50px;
   cursor: pointer;
 }
+
 .create button:hover {
   scale: 1.1;
   transition: 0.3s ease;
 }
 
 /* Not Found */
-
-.not-found a{ 
+.not-found a { 
   text-decoration: none;
 }
 
-.not-found *{
+.not-found * {
   padding-bottom: 10px;
 }
 
-/* Login / Signup */
-.login, .signup{
+/* Login | Signup */
+.login, .signup {
   display: grid;
   align-content: center;
   justify-content: center;
   height: 100vh;
 }
 
-.signup h1{
+.signup h1 {
   margin-top: -30px;
 }
 
@@ -214,20 +210,9 @@ button {
   gap: 20px;
 }
 
-.box input {
+.box input, .signup-box input {
   margin-top: 20px;
   margin-bottom: 20px;
-  height: 50px;
-  width: 300px;
-  border-radius: 10px;
-  font-size: 16px;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-.signup-box input {
-  margin-top: 10px;
-  margin-bottom: 10px;
   height: 50px;
   width: 300px;
   border-radius: 10px;
@@ -254,7 +239,7 @@ button {
   max-width: 600px;
 }
 
-/* Comment section */
+/* Comments */
 .nocomment {
   margin-top: 10px;
 }
@@ -263,8 +248,6 @@ button {
   display: flex;
   justify-content: space-between; 
   align-items: center;
-  /* padding: 10px;  */
-
 }
 
 .comment-item p {
@@ -279,7 +262,20 @@ button {
   margin-left: auto; 
 }
 
-#portfolio a{
+.comment-item textarea {
+  width: 60%;
+}
+
+.comment-buttonholder button {
+  margin-left: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-top: -10px;
+  margin-bottom: -10px;
+}
+
+/* Portfolio Link */
+#portfolio a {
   background-color: transparent;
   text-decoration: none;
   cursor: pointer;
@@ -296,8 +292,8 @@ button {
   transition: 0.4s;
 }
 
-/* Search page */
-.search{
+/* Search Page */
+.search {
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
@@ -314,13 +310,13 @@ button {
   margin-bottom: 30px;
 }
 
-.search form div{
+.search form div {
   display: grid;
   grid-template-columns: 25% 75%;
   align-items: center;
 }
 
-.search input, .search select{
+.search input, .search select {
   width: 100%;
   padding: 6px 10px;
   margin: 10px 0;
@@ -344,25 +340,121 @@ button {
   transition: 0.3s ease;
 }
 
-.comment-buttonholder button {
-  margin-left: 10px;
-  padding-left: 10px;
-  padding-right: 10px;
-  margin-top: -10px;
-  margin-bottom: -10px;
+/* Image handling */
+.previewcontainer {
+  margin-top: '10px';
 }
 
-.buttonholder button{
-  margin-right: 20px;
-  font-size: 16px
+.previmages {
+  justify-content: center;
+  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.imguploader {
+  display: grid;
+}
+
+.blog-image {
+  width: 40%;
+  max-width: 600px;
+  height: auto;
+  margin: 10px 0;
+  display: block;
+  border-radius: 10px;
+}
+
+.piccontainer, .editPiccontainer {
+  max-width: 600px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.piccontainer img, .editPiccontainer img {
+  width: 40%;
+  height: auto;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+}
+
+.modal-content {
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  position: relative;
+  gap: 200px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.modal-buttons button {
+  cursor: pointer;
+}
+
+#modaldelete {
+  background-color: #DC143C;
+  color: white;
+  border: transparent;
+}
+
+#modalcancel {
+  background-color: #2F4858;
+  color: white;
+}
+
+.disclaimer p {
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Buttons */
+button {
+  border-radius: 6px;
+  width: 15vh;
+  height: 5vh;
+  margin-top: 10px;
+}
+
+#deleteButton {
+  border-color: red;
+}
+
+#deleteButton:hover {
+  background-color: lightcoral;
 }
 
 #deletebutton, #cancelbutton {
   background: #DC143C;
-  
 }
 
 #confirmbutton {
   background: #228B22;
 }
 
+.blog-details button:hover, .modal-buttons button:hover {
+  scale: 1.1;
+  transition: 0.3s ease;
+}
+
+.buttonholder button {
+  margin-right: 20px;
+  font-size: 16px;
+}

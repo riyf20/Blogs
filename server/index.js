@@ -11,7 +11,8 @@ const allowedOrigins = [
 ];
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 const corsOptions = {
   origin: (origin, callback) => {
     if (allowedOrigins.includes(origin) || !origin) {  
@@ -29,9 +30,10 @@ app.use(cors(corsOptions));
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const debug = false; //used for global console debugging 
+// Used for global console debugging 
+const debug = false; 
 
-// creates connection
+// Creates connection
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -40,7 +42,7 @@ const db = mysql.createConnection({
     database: process.env.DB_NAME
 });
 
-// connection attempt
+// Connection attempt
 db.connect((err) => {
     if (err) throw err;
     {debug && console.log('Connected to RDS database')};
@@ -281,6 +283,31 @@ app.post('/api/blogs/post', authenticateToken, (req, res) => {
     );
 });
 
+// Endpoint: Post images for blog
+app.post('/api/images/upload', authenticateToken, (req, res) => {
+  const { blogId, blogAuthor, imageBlob } = req.body;
+
+  // Uses base64 for images
+  const buffer = Buffer.from(imageBlob, 'base64');
+
+  db.query(
+    'INSERT INTO `Images` (`blogid`, `author`, `image_blob`) VALUES (?, ?, ?)', 
+    [blogId, blogAuthor, buffer], 
+    (err, results) => {
+      if (err) {
+        console.error('Error inserting new image:', err);
+        return res.status(500).json({ message: 'Error inserting new image' });
+      }
+
+      // Successful insertion
+      res.status(201).json({
+        message: 'Image uploaded successfully!',
+        imageId: results.insertId,
+      });
+    }
+  );
+});
+
 // Endpoint: Post a comment
 app.post('/api/blogs/:id/comment', authenticateToken, (req, res) => {
   const blogId = req.params.id; 
@@ -315,6 +342,62 @@ app.get('/api/blogs/:id/comments', (req, res) => {
   });
 });
 
+// Endpoint: Return all images for specific blog
+app.get('/api/blogs/:id/images', (req, res) => {
+  const id = req.params.id;
+
+  db.query('SELECT * FROM Images WHERE blogid = ?', [id], (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error fetching images' });
+    }
+
+    // Convert buffer to base64
+    const images = results.map(result => ({
+      ...result,
+      image_blob: result.image_blob.toString('base64')
+    }));
+    res.json(images);
+  });
+});
+
+// Endpoint: Delete Images
+app.delete('/api/blogs/:id/images/delete', authenticateToken, async (req, res) => {
+  const blogId = req.params.id; 
+  const { images } = req.body; 
+
+  if (!Array.isArray(images)) {
+    return res.status(400).json({ error: 'Invalid request body' });
+
+  }
+  // Can handle multiple images
+  try {
+    // Use helper function to delete
+    await deleteImagesFromDatabase(blogId, images);
+    res.status(200).send('Images deleted successfully');
+  } catch (err) {
+    console.error('Error deleting images:', err);
+    res.status(500).send('Failed to delete images');
+  }
+});
+
+// Endpoint [Helper]: Delete images from array
+async function deleteImagesFromDatabase(blogId, imageIds) {
+  const query = 
+  `DELETE FROM Images
+  WHERE blogid = ? AND id IN (?)`;
+
+  return new Promise((resolve, reject) => {
+    db.query(query, [blogId, imageIds], (err, results) => {
+      if (err) {
+        console.error('Error executing query:', err);
+        return reject(err);
+      }
+      resolve(results);
+    });
+  });
+}
+
+// Endpoint: Updates blog details
 app.post('/api/blogs/:id/update', (req, res) => {
   const id = req.params.id;
   const { editBody } = req.body; 
@@ -328,6 +411,7 @@ app.post('/api/blogs/:id/update', (req, res) => {
 
 })
 
+// Endpoint: Updates comments
 app.post('/api/blogs/:postid/:id/update', (req, res) => {
   const postid = req.params.postid
   const id = req.params.id
@@ -341,12 +425,12 @@ app.post('/api/blogs/:postid/:id/update', (req, res) => {
   });
 })
 
-
-
+// Endpoint: Returns search results
 app.get('/api/search', (req, res) => {
   const type = req.query.type;
   const field = req.query.field;
 
+  // Search in comments
   if(type === 'comments') {
     db.query(`SELECT * FROM Comments WHERE body LIKE '%${field}%'`, (err, results) => {
       if (err) {
@@ -356,6 +440,7 @@ app.get('/api/search', (req, res) => {
     });
 
   } else {
+    // Search by author, title, or body
     db.query(`SELECT * FROM Blogs WHERE ${type} LIKE '%${field}%'`, (err, results) => {
       if (err) {
         return res.status(500).json({ message: 'Error during search [blog]' });
@@ -367,6 +452,7 @@ app.get('/api/search', (req, res) => {
 })
 
 { debug &&
+  // If debug is true will use localhost 
 app.listen(3001, () => {
    console.log('Server is running on port 3001')
 });

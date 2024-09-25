@@ -5,10 +5,13 @@ const debug = false;
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const Login = ({onAuthSuccess}) => {
+    // States for input fields
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate(); 
+    const [showPassword, setShowPassword] = useState(false);
+
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -27,8 +30,8 @@ const Login = ({onAuthSuccess}) => {
             if (response.ok) {
                 // Store the JWT token and username in local storage
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user', username)
-                console.log('Login successful!');
+                localStorage.setItem('user', data.username);
+                {debug && console.log('Login successful!')};
                 onAuthSuccess();
                 navigate('/'); 
             } else {
@@ -40,7 +43,12 @@ const Login = ({onAuthSuccess}) => {
         }
     };
 
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
     return (
+        <>
         <div className='login'>
             <div className='border'>
                 <h1>Login</h1>
@@ -54,13 +62,18 @@ const Login = ({onAuthSuccess}) => {
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
                             />
-                            <input
-                                type='password'
-                                placeholder='Enter your password'
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
+                            <div className='password-container-login'>
+                                <input
+                                    type={showPassword ? 'text' : 'password'} 
+                                    placeholder='Enter your password'
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <button onClick={togglePasswordVisibility} type='button'>
+                                    <i className={`fa ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`} />
+                                </button>
+                            </div>
                             <button type='submit'>Log in</button> 
                             {error && <p className='error'>{error}</p>}
                         </div>
@@ -73,7 +86,13 @@ const Login = ({onAuthSuccess}) => {
                     </p>
                 </div>
             </div>
+            {/* <center>
+            <div>
+                <div id='guest'><p>Don't want to make an account yet?</p> <br /> Try the new Guest Mode!</div>
+            </div>
+            </center> */}
         </div>
+        </>
     );
 }
 

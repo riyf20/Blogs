@@ -1,6 +1,6 @@
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import useFetch from "./useFetch";
-import React, { useState, useEffect } from "react";
 import Notification from "./Notification";
 import ImageUploader from "./ImageUploader";
 
@@ -41,9 +41,12 @@ const BlogDetails = () => {
   const [currentIndex, setCurrentIndex] = useState(-1);  // Current index (For images)
   const [currentId, setCurrentId] = useState(-1);  // Current ID (For comments or images)
   const [updating, setUpdating] = useState(false);  // Tracks if the blog post is being updated (sent to server)
+  const [notifType, setNotifType] = useState('images'); // Changes modal type for dynamic modal information
+  const [confirmId, setConfirmId] = useState(-1) // Holds the comment's id
+  const [confirmPostId, setConfirmPostId] = useState(-1) // Holds the postid of the comment (blog it was commented on)
 
   // Modal
-  const closeModal = () => setModalOpen(false);  // Function to close the modal
+  const closeModal = () => setModalOpen(false); 
 
   useEffect(() => {
     if (blog) {
@@ -85,7 +88,7 @@ const BlogDetails = () => {
     }
   }, [blog, id, token, commentsUpdated, editComment, hasimages, edit]);
 
-  // Server | Deletes blog and assocaited comments
+  // Server | Deletes blog and associated comments
   const handleClick = () => {
 
     // Endpoint: Delete blog [and its comments]
@@ -124,12 +127,13 @@ const BlogDetails = () => {
   };
 
   // Server | Deletes comment
-  const handleDeleteComment = (id, postid) => {
+  const handleDeleteComment = () => {
 
-    const comment = {id, postid}
+    // Holds the comments id and blog id 
+    const comment = {confirmId, confirmPostId}
 
     // Endpoint: Delete comment
-    fetch(`${API_BASE_URL}/api/blogs/${id}/comments/delete` , {
+    fetch(`${API_BASE_URL}/api/blogs/${confirmPostId}/comments/delete` , {
       method: 'DELETE',
       headers: {
         "Content-Type": "application/json",
@@ -142,7 +146,7 @@ const BlogDetails = () => {
         throw new Error('Failed to delete the comment');
       }
       
-      // Clear comments, will trigger reload
+      // Clear comments and triggers reload
       setComments([]); 
       setCommentsUpdated(prev => !prev);
     })
@@ -154,6 +158,7 @@ const BlogDetails = () => {
   // Server | Posts comment
   const handleComment = () => {
 
+    // Comment details
     const comment = { body, user, id };
 
     // Endpoint: Post comment
@@ -170,7 +175,7 @@ const BlogDetails = () => {
         throw new Error('Failed to post the comment');
       }
 
-      // Clear comments, will trigger reload
+      // Clear comments and will trigger reload
       setComments([]); 
       setCommentsUpdated(prev => !prev);
     })
@@ -180,8 +185,7 @@ const BlogDetails = () => {
   };
 
   // Server | Submits new edits (blog/images) to server
-  const handleEditConfirm = async (e) => {
-    e.preventDefault(); 
+  const handleEditConfirm = async () => {
 
     // Attemping server connection, will be used to conditional rendering
     setUpdating(true)
@@ -246,9 +250,20 @@ const BlogDetails = () => {
     }
   };
 
+  // Store index of image that will be deleted
+  const deleteImageIndex = () => {
+    setDeleteImages((currentImages) => [...currentImages, currentId]);
+    setImages(prev => prev.filter((_, i) => i !== currentIndex));
+  }
+
   // Server | Update comment
-  const handleCommentConfirm = (id, postid) => {
+  const handleCommentConfirm = () => {
+
+    // Grab comment and blog ids
+    const postid = confirmPostId;
+    const id = confirmId;
     const comedits = {editCommentBody};
+
     fetch(`${API_BASE_URL}/api/blogs/${postid}/${id}/update`, {
       method: 'POST',
       headers: {
@@ -292,6 +307,7 @@ const BlogDetails = () => {
 
   // Press timer (useful for mobile implementation later)
   const handleLongPress = (index, id) => {
+    setNotifType('images')
     if (pressTimer) {
       clearTimeout(pressTimer);
     }
@@ -305,12 +321,6 @@ const BlogDetails = () => {
     );
   };
 
-  // Store index of image that will be deleted
-  const deleteImageIndex = () => {
-    setDeleteImages((currentImages) => [...currentImages, currentId]);
-    setImages(prev => prev.filter((_, i) => i !== currentIndex));
-  }
-
   // Mobile implementation later
   // const handlePressEnd = () => {
   //   if (pressTimer) {
@@ -318,6 +328,50 @@ const BlogDetails = () => {
   //     setPressTimer(null);
   //   }
   // };
+
+  // Reuseable function for Modal
+  const notifSetup = (type, id, postid) => {
+    if(type===1) {
+      // Type 1: Editing blog post
+      setNotifType('blogEdit');
+      setModalMessage("Confirm these changes to your blog post?")
+
+    } else if(type===2) {
+      // Type 2: Editing comment
+      setConfirmId(id);
+      setConfirmPostId(postid);
+      setNotifType('commentEdit');
+      setModalMessage("Confirm these changes to your comment?")
+
+    } else if(type===3) {
+      // Type 3: Deleting blog post
+      setNotifType('blogDelete');
+      setModalMessage("Are you sure you want to delete this post?")
+
+    } else if(type===4) {
+      // Type 4: Deleting comment
+      setConfirmId(id);
+      setConfirmPostId(postid);
+      setNotifType('commentDelete');
+      setModalMessage("Are you sure you want to delete your comment?")
+    }
+    setModalOpen(true);
+  }
+
+  // Changes the main confirm button function based on notification type of the modal
+  const notifTypeFunction = () => {
+    if(notifType === 'images') {
+      deleteImageIndex();
+    } else if (notifType === 'blogEdit') {
+      handleEditConfirm();
+    } else if(notifType === 'blogDelete') {
+      handleClick();
+    } else if(notifType === 'commentDelete') {
+      handleDeleteComment();
+    } else if (notifType === 'commentEdit') {
+      handleCommentConfirm();
+    }
+  }
 
   return (
     <>
@@ -428,7 +482,8 @@ const BlogDetails = () => {
               (
                 <>
                 <button onClick={handleEdit}>Edit</button>
-                <button id="deletebutton" onClick={handleClick}>Delete</button>
+                <button id="deletebutton" onClick={() => notifSetup(3)}>Delete</button>
+                {/* will reroute to the handleClick function*/}
                 </>
               ) 
               :
@@ -442,7 +497,8 @@ const BlogDetails = () => {
                       <> 
                         <ImageUploader setImages={setNewImages} appendingImages={true} /> {/* Pass setImages to ImageUploader */}
                         <button id="cancelbutton" onClick={handleCancel}>Cancel</button>
-                        <button id="confirmbutton" onClick={handleEditConfirm}>Confirm</button>
+                        <button id="confirmbutton" onClick={() => notifSetup(1)}>Confirm</button> 
+                        {/* will reroute to the handleEditConfirm function*/}
                       </>
                     }
                 </>
@@ -473,7 +529,8 @@ const BlogDetails = () => {
                   <div className="comment-buttonholder">
                     {/* Cancel / Confirm edits to the comment */}
                     <button id="cancelbutton" onClick={() => handleEditComment(index)}>Cancel</button> 
-                    <button id="confirmbutton" onClick={() => handleCommentConfirm(comment.id, comment.postid)}>Confirm</button> 
+                    <button id="confirmbutton" onClick={() => notifSetup(2, comment.id, comment.postid)}>Confirm</button> 
+                    {/* will reroute to the handleCommentConfirm(comment.id, comment.postid) function*/}
                   </div>
                 </>
                 :
@@ -487,7 +544,8 @@ const BlogDetails = () => {
                     {/* Will show editing and deleting option if you are author */}
                     <div className="comment-buttonholder">
                       <button onClick={() => handleEditComment(index) & setCommentBody(comment.body)}>Edit</button> 
-                      <button id="deletebutton" onClick={() => handleDeleteComment(comment.id, comment.postid)}>Delete</button> 
+                      <button id="deletebutton" onClick={() => notifSetup(4, comment.id, comment.postid) }>Delete</button> 
+                      {/* will reroute to the handleDeleteComment(comment.id, comment.postid) function*/}
                     </div>
                     </>
                   }
@@ -528,8 +586,8 @@ const BlogDetails = () => {
       
     </div>
 
-    {/* Modal used for image confirmation */}
-    <Notification isOpen={modalOpen} onClose={closeModal} message={modalMessage} deleteClicked={deleteImageIndex}/>
+    {/* Modal used for user confirmation */}
+    <Notification isOpen={modalOpen} onClose={closeModal} message={modalMessage} deleteClicked={notifTypeFunction}  edits={ (notifType==='blogEdit' || notifType==='commentEdit') ? true : false}/>
     </>
   );
 };

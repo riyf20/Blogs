@@ -13,23 +13,17 @@ const Search = () => {
     const [comment, setComment] = useState(false);
     const [count, setCount] = useState(0);
 
-
-
     const searchQuery = (e) => {
         e.preventDefault()
         setCount(+1);
 
-        // const type = queryType;
         const field = query;
         if(queryType==="comments") {
             setComment(true)
         } else {
             setComment(false)
         }
-
-        console.log(`${API_BASE_URL}/api/search?type=${queryType}&field=${encodeURIComponent(field)}`)
-        
-        
+                
         fetch(`${API_BASE_URL}/api/search?type=${queryType}&field=${encodeURIComponent(field)}`, {
             method: 'GET',
             headers: {

@@ -35,11 +35,11 @@ const debug = false;
 
 // Creates connection
 const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    port: process.env.DB_PORT,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  port: process.env.DB_PORT,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
 
 // Connection attempt
@@ -62,6 +62,7 @@ app.post('/api/login', (req, res) => {
       }
   
       const user = results[0];
+      const username = user.username
   
       // Compare provided password with stored hashed password
       const match = await bcrypt.compare(password, user.password_hash);
@@ -71,7 +72,7 @@ app.post('/api/login', (req, res) => {
         const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
   
         // Send the token to the client
-        res.json({ token });
+        res.json({ token, username });
       } else {
         res.status(401).json({ message: 'Incorrect password' });
       }
@@ -217,7 +218,7 @@ app.delete('/api/blogs/delete/:id', authenticateToken, (req, res) => {
 
 // Endpoint: Delete comment
 app.delete('/api/blogs/:id/comments/delete', authenticateToken, (req, res) => {
-  const {id, postid} = req.body;
+  const {confirmId, confirmPostId} = req.body;
 
   // Start full transaction
   db.beginTransaction((err) => {
@@ -228,7 +229,7 @@ app.delete('/api/blogs/:id/comments/delete', authenticateToken, (req, res) => {
       // Move comments to Deletecomments table
       db.query(
         'INSERT INTO DeletedComments (author, body, postid) SELECT author, body, postid FROM Comments WHERE id = ? AND postid = ?',
-        [id, postid],
+        [confirmId, confirmPostId],
         (err, results) => {
           if (err) {
             return db.rollback(() => {
@@ -237,7 +238,7 @@ app.delete('/api/blogs/:id/comments/delete', authenticateToken, (req, res) => {
           }
 
           // Delete from Comments
-          db.query('DELETE FROM Comments WHERE id = ? AND postid = ?', [id, postid], (err, results) => {
+          db.query('DELETE FROM Comments WHERE id = ? AND postid = ?', [confirmId, confirmPostId], (err, results) => {
               if (err) {
                 return db.rollback(() => {
                   res.status(500).json({ message: 'Error deleting comment' });
@@ -412,7 +413,7 @@ app.post('/api/blogs/:id/update', (req, res) => {
 })
 
 // Endpoint: Updates comments
-app.post('/api/blogs/:postid/:id/update', (req, res) => {
+app.post('/api/blogs/:postid/:id/update', authenticateToken, (req, res) => {
   const postid = req.params.postid
   const id = req.params.id
   const {editCommentBody} = req.body;
@@ -439,6 +440,13 @@ app.get('/api/search', (req, res) => {
       res.json(results);
     });
 
+  } else if (type=='profile') {
+    db.query(`SELECT * FROM Comments WHERE author='${field}'`, (err, results) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error during search [comments]' });
+      }
+      res.json(results);
+    });
   } else {
     // Search by author, title, or body
     db.query(`SELECT * FROM Blogs WHERE ${type} LIKE '%${field}%'`, (err, results) => {
@@ -448,8 +456,97 @@ app.get('/api/search', (req, res) => {
       res.json(results);
     });
   }
-
 })
+
+// Endpoint: Grabs user profile data
+app.get('/api/:user/data', (req, res) => {
+  const user = req.params.user;
+
+  db.query(`SELECT * FROM Users WHERE username='${user}'`, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error during profile request' });
+    }
+    res.json(results)
+  })
+})
+
+// Endpoint: Updates user profile data
+app.post('/api/profile/:user/:userID/update',authenticateToken, async (req, res) => {
+    const user = req.params.user;
+    const userid = req.params.userID;
+    const { fName, lName, userName, email, password } = req.body;
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        db.query(
+            `UPDATE Users SET 
+               first_name = ?, 
+               last_name = ?, 
+               username = ?, 
+               email = ?, 
+               password_txt = ?, 
+               password_hash = ? 
+             WHERE username = ? AND id = ?`,
+            [fName, lName, userName, email, password, hashedPassword, user, userid],
+            (err, results) => {
+                if (err) {
+                    return res.status(500).json({ message: 'Error updating user profile' });
+                }
+                res.json(results);
+            }
+        );
+    } catch (err) {
+        res.status(500).json({ message: 'Error hashing password' });
+    }
+});
+
+// Endpoint: Delete post via profile page
+app.delete('/api/profile/:user/:blogId/delete', authenticateToken, async (req, res) => {
+  const blogId = req.params.blogId; 
+  const user = req.params.user;
+
+  db.query(
+    'DELETE FROM Blogs WHERE author=? AND id=?', 
+    [user, blogId], 
+    (err, results) => {
+        if (err) {
+          console.error('Error deleting blog from profile page:', err);
+          return res.status(500).json({ message: 'Error deleting blog from profile page' });
+        }
+
+        // Successful insertion
+        res.status(201).json({
+          message: 'Blog deleted from profile - success!',
+        });
+    }
+  );
+
+});
+
+// Endpoint: Delete comment via profile page
+app.delete('/api/profile/:user/:commentId/:postid/delete', authenticateToken, async (req, res) => {
+  const commentId = req.params.commentId; 
+  const postid = req.params.postid;
+  const user = req.params.user;
+  
+  db.query(
+    'DELETE FROM Comments WHERE author=? AND postid=? AND id=?', 
+    [user, postid, commentId], 
+    (err, results) => {
+        if (err) {
+          console.error('Error deleting comment from profile page:', err);
+          return res.status(500).json({ message: 'Error deleting comment from profile page' });
+        }
+
+        // Successful insertion
+        res.status(201).json({
+          message: 'Comment deleted from profile - success!',
+        });
+    }
+  );
+
+});
 
 { debug &&
   // If debug is true will use localhost 

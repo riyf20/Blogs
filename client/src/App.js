@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Analytics } from "@vercel/analytics/react"
 import Login from './Login';
 import Signup from './Signup';
 import Home from './Home';
@@ -7,8 +8,8 @@ import Create from './Create';
 import BlogDetails from './BlogDetails';
 import Navbar from './Navbar';
 import NotFound from './NotFound';
-import { Analytics } from "@vercel/analytics/react"
 import Search from './Search';
+import Profile from './Profile';
 
 // used for global debugging
 const debug = false;
@@ -52,6 +53,7 @@ function App() {
                 <Route path="/create" element={<Create onAuthSuccess={handleAuthSuccess}/>} />
                 <Route path="/blogs/:id" element={<BlogDetails/>} />
                 <Route path="/search" element={<Search/>} />
+                <Route path="/profile" element={<Profile/>} />
                 <Route path='*' element={<NotFound/>}></Route>
               </Routes>
             </div>

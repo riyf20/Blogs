@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Notification = ({ isOpen, onClose, message, subtitle, deleteClicked, confirm, profile, edits }) => {
+const Notification = ({ isOpen, onClose, message, subtitle, deleteClicked, confirm, profile, edits, guestUser }) => {
   if (!isOpen) return null;
   
   const handleDeleteClick = () => {
@@ -31,14 +31,14 @@ const Notification = ({ isOpen, onClose, message, subtitle, deleteClicked, confi
           :
           <p>{message}</p>}
         <div className='modal-buttons'>
-            <button id='modalcancel' onClick={onClose}>Cancel</button>
-              {edits ?
-              // If modal is being used for edits, "confirm" will be main action
-              <><button id='profileSave' onClick={handleDeleteClick}>Confirm</button></>
-              :
-              // If modal is being used for deleting, "delete" will be main action
-              <><button id='modaldelete' onClick={handleDeleteClick}>Delete</button></>
-              }
+            {edits ?
+            // If modal is being used for edits, "confirm" will be main action
+            <><button id='profileSave' onClick={handleDeleteClick}>Confirm</button></>
+            :
+            // If modal is being used for deleting, "delete" will be main action | [Disabled for guest users]
+            <><button id='modaldelete' onClick={handleDeleteClick} disabled={guestUser} >Delete</button></>
+            }
+            <button id='modalcancel' onClick={onClose} >Cancel</button>
         </div>
       </div>
     </div>

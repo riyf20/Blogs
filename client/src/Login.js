@@ -30,7 +30,8 @@ const Login = ({onAuthSuccess}) => {
             if (response.ok) {
                 // Store the JWT token and username in local storage
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user', data.username);
+                localStorage.setItem('username', data.username);
+                localStorage.setItem('user', JSON.stringify(data.user));
                 {debug && console.log('Login successful!')};
                 onAuthSuccess();
                 navigate('/'); 
@@ -46,6 +47,24 @@ const Login = ({onAuthSuccess}) => {
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
+
+    // Creates new token for guest allowing them access
+    const guestMode = async (e) => {
+
+        const res = await fetch(`${API_BASE_URL}/api/login/guest-mode`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await res.json();
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('username', 'guest');
+        onAuthSuccess();
+        navigate('/');
+
+    }
 
     return (
         <>
@@ -86,11 +105,18 @@ const Login = ({onAuthSuccess}) => {
                     </p>
                 </div>
             </div>
-            {/* <center>
-            <div>
-                <div id='guest'><p>Don't want to make an account yet?</p> <br /> Try the new Guest Mode!</div>
-            </div>
-            </center> */}
+
+            {/* New Guest mode block */}
+            <center>
+                <div>
+                    <div id='guest'>
+                        <h4>Don't want to make an account yet?</h4> 
+                        <b>Try the new <span>Guest Mode!</span> </b>
+                        <br />
+                        <button id='guestButton' onClick={guestMode}> <b>View as Guest</b> </button>
+                    </div>
+                </div>
+            </center>
         </div>
         </>
     );

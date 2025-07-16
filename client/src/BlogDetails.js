@@ -7,12 +7,12 @@ import ImageUploader from "./ImageUploader";
 const debug = false;
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const BlogDetails = () => {
+const BlogDetails = ({guestUser}) => {
   // ID | Navigation
   const { id } = useParams();  // Blog ID 
   const navigate = useNavigate();  // Navigation
 
-  // Origin Fetch
+  // Original Fetch
   const { data: blog, error, isLoading } = useFetch(`${API_BASE_URL}/api/blogs/` + id); 
 
   // User Details
@@ -575,7 +575,10 @@ const BlogDetails = () => {
                   placeholder={comments.length > 0 ? 'Enter your comment' : 'Be the first to comment!'}
                   onChange={(e) => setBody(e.target.value)}
                 ></textarea>
-                <button type="submit">Comment</button>
+                {/* Disables button for guest users */}
+                <button type="submit" disabled={guestUser}
+                  style={{width: guestUser ? '300px' : ''}}
+                > {guestUser ? 'Sign up to add your own comments!' : 'Comment'}</button>
               </form>
             </div>
           
@@ -587,7 +590,7 @@ const BlogDetails = () => {
     </div>
 
     {/* Modal used for user confirmation */}
-    <Notification isOpen={modalOpen} onClose={closeModal} message={modalMessage} deleteClicked={notifTypeFunction}  edits={ (notifType==='blogEdit' || notifType==='commentEdit') ? true : false}/>
+    <Notification isOpen={modalOpen} onClose={closeModal} message={modalMessage} deleteClicked={notifTypeFunction} edits={ (notifType==='blogEdit' || notifType==='commentEdit') ? true : false}/>
     </>
   );
 };

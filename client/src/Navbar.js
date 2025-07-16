@@ -7,18 +7,18 @@ const Navbar = ({ onAuthSuccess }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false); 
     const navigate = useNavigate();
     const location = useLocation(); 
-
+    
     useEffect(() => {
         const checkTokenExpiration = () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            const decodedToken = jwtDecode(token);
-            const currentTime = Date.now() / 1000;
+            const token = localStorage.getItem('token');
+            if (token) {
+                const decodedToken = jwtDecode(token);
+                const currentTime = Date.now() / 1000;
 
-            if (decodedToken.exp < currentTime) {
-                handleLogout(true);
+                if (decodedToken.exp < currentTime) {
+                    handleLogout(true);
+                }
             }
-        }
         };
         checkTokenExpiration(); 
     }, [location, navigate]);
@@ -26,6 +26,7 @@ const Navbar = ({ onAuthSuccess }) => {
     const handleLogout = (expToken) => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('username');
         if (!expToken) {
             onAuthSuccess();
         } else {
@@ -56,7 +57,7 @@ const Navbar = ({ onAuthSuccess }) => {
 
     return ( 
         <nav className="navbar">
-            <Link to="/"><h1>Blogs</h1></Link> 
+            <Link to="/" onClick={() => (setIsMenuOpen(false))}><h1>Blogs</h1></Link> 
             
             {/* Hamburger Icons */}
             <div className={`hamburger ${isMenuOpen ? "open" : ""}`} onClick={toggleMenu}>

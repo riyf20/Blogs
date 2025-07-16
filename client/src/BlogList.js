@@ -4,7 +4,7 @@ import Notification from "./Notification";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const BlogList = ({blogs, title, comment, profile, cleanFunc}) => {
+const BlogList = ({blogs, title, comment, profile, cleanFunc, guestUser}) => {
 
     const user = localStorage.getItem('user');  
     const token = localStorage.getItem('token'); 
@@ -40,8 +40,16 @@ const BlogList = ({blogs, title, comment, profile, cleanFunc}) => {
     // Modal information | Delete blog (within the profile page)
     const confirmDeletePost = (blogId) => {
         setModalOpen(true);
-        setModalMessage("Would you like to delete this post?")
-        setModalSubtitle("All images and comments associated will be deleted as well.")
+
+        // Changed modal information for guest users
+        if(guestUser) {
+            setModalMessage("Delete post preview.")
+            setModalSubtitle("This is how the delete confirmation will appear. You’ll be reminded to confirm before a post is permanently removed.")
+        } else {
+            setModalMessage("Would you like to delete this post?")
+            setModalSubtitle("All images and comments associated will be deleted as well.")
+        }
+        
         setBlogId(blogId);
     }
 
@@ -71,11 +79,19 @@ const BlogList = ({blogs, title, comment, profile, cleanFunc}) => {
     // Modal information | Delete comment (within the profile page)
     const confirmDeleteComment = (commentId, postid) => {
         setModalOpen(true);
-        setModalMessage("Would you like to delete this comment?")
-        setModalSubtitle("Your comment will be removed from the original post.")
 
-        setBlogId(postid);
-        setCommentId(commentId);
+        // Changed modal information for guest users
+        if(guestUser) {
+            setModalMessage("Delete comment preview.")
+            setModalSubtitle("This is how the delete confirmation will appear. You’ll be reminded to confirm before a comment is permanently removed.")        
+        } else {
+            setModalMessage("Would you like to delete this comment?")
+            setModalSubtitle("Your comment will be removed from the original post.") 
+
+            setBlogId(postid);
+            setCommentId(commentId);
+        }
+
     }
     
     // Server | Deletes comment (within the profile page)
@@ -180,7 +196,7 @@ const BlogList = ({blogs, title, comment, profile, cleanFunc}) => {
             }
         </div>
 
-        <Notification isOpen={modalOpen} onClose={closeModal} message={modalMessage} subtitle={modalSubtitle} profile={true} deleteClicked={ isComment ? deleteComment : deletePost }/>
+        <Notification isOpen={modalOpen} onClose={closeModal} message={modalMessage} subtitle={modalSubtitle} profile={true} deleteClicked={ isComment ? deleteComment : deletePost } guestUser={guestUser}/>
         </>
 
      );

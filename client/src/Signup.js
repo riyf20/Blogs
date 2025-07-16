@@ -12,8 +12,18 @@ const Signup = ({ onAuthSuccess }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Guest warning booleon
+  const [guestWarning, setguestWarning] = useState(false);
+
   const handleSignup = async (e) => {
     e.preventDefault();
+
+    // Check to prevent current users to set username to "guest"
+    if (username==='guest') {
+      setguestWarning(true);
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/register`, {
         method: 'POST',
@@ -69,9 +79,25 @@ const Signup = ({ onAuthSuccess }) => {
                       type='text'
                       placeholder='Enter your username'
                       value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      onChange={(e) => {
+                        setUsername(e.target.value);
+                        setguestWarning(false)
+                      }}
                       required
+                      // Dynamically applies style when invalid username was attempted
+                      style={ guestWarning ? {border:'2px solid red'} : {}}
                     />
+                    {/* Dynamically applies warning message if user attempts to set invalid username */}  
+                    {guestWarning ? 
+                      <>
+                      <center>
+                        <p className='signUpWarning'>Sorry that username is reserved.</p>
+                        <p className='signUpWarning'>Please enter a new username.</p>
+                      </center>
+                      </> 
+                    : 
+                    <></>}
+
                   </div>
               
                   <div>

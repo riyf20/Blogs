@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import BlogList from './BlogList'
+import Guest from "./Guest";
 
-
-const Search = () => {
+const Search = ({guestUser}) => {
     const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
     const user = localStorage.getItem('user');
     const token = localStorage.getItem('token');
@@ -44,6 +44,12 @@ const Search = () => {
   return (
     <>
     <div className="search">
+
+        {/* Conditional guest component | Informational block for guest users */}
+        {guestUser && 
+            <Guest parentElement={'Search'}/>
+        }
+
         <h1>Search for a Blog or Comment</h1>
         <form onSubmit={searchQuery}>
             <div>
@@ -85,7 +91,7 @@ const Search = () => {
             ) 
         :  
             (
-                <><br /> {count > 0 ? <h4>No Results Found</h4> : <h4>Enter a search above</h4> }</>
+                <><br /> {count > 0 ? <h4>No Results Found</h4> : <h4>Enter a search query above</h4> }</>
             )
         }
     </div>

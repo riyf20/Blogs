@@ -11,25 +11,45 @@ import NotFound from './NotFound';
 import Search from './Search';
 import Profile from './Profile';
 
-// used for global debugging
+// Used for global debugging
 const debug = false;
 
 function App() {
+  // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Check authentication status on initial render and set state accordingly
-   const token = localStorage.getItem('token');
-    useEffect(() => {
-      if (token) {
-        setIsAuthenticated(true);
-      }
-    }, [token]);
+  // Checks authentication status on initial render
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+    setCheckingAuth(false);
+  }, []);
 
   // Function to handle successful login/signup
   const handleAuthSuccess = () => {
     setIsAuthenticated(true);
-    {debug && console.log("auth set to true")};
+    {debug && console.log("authentication set to true")};
   };
+
+  // Guest mode state
+  const [guestMode, setGuestMode] = useState(false);
+
+  // Checks to see if user is guest
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    
+    if (user) {
+      const parsedUser = JSON.parse(user); 
+      const {isGuest} = parsedUser;
+      setGuestMode(isGuest);
+    }
+     
+  }, [guestMode, isAuthenticated]);
+
+  if (checkingAuth) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Router>
@@ -49,11 +69,12 @@ function App() {
             <Navbar />
             <div className="content">
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/create" element={<Create onAuthSuccess={handleAuthSuccess}/>} />
-                <Route path="/blogs/:id" element={<BlogDetails/>} />
-                <Route path="/search" element={<Search/>} />
-                <Route path="/profile" element={<Profile/>} />
+                {/* Added props to identify if guest user is enabled*/}
+                <Route path="/" element={<Home guestUser={guestMode} />} />
+                <Route path="/create" element={<Create onAuthSuccess={handleAuthSuccess} guestUser={guestMode}/>} />
+                <Route path="/blogs/:id" element={<BlogDetails guestUser={guestMode}/>} />
+                <Route path="/search" element={<Search guestUser={guestMode}/>} />
+                <Route path="/profile" element={<Profile guestUser={guestMode}/>} />
                 <Route path='*' element={<NotFound/>}></Route>
               </Routes>
             </div>

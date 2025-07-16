@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ImageUploader from "./ImageUploader";
+import Guest, {guestSignUp} from "./Guest";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const Create = ({ onAuthSuccess }) => {
+const Create = ({ onAuthSuccess, guestUser }) => {
     // Navigation
     const navigate = useNavigate(); //Navigation
 
@@ -73,6 +74,12 @@ const Create = ({ onAuthSuccess }) => {
 
     return (
         <div className="create">
+
+            {/* Conditional guest component | Informational block for guest users */}
+            {guestUser && 
+                <Guest parentElement={'Create'}/>
+            }
+
             <h1>Add a New Blog</h1>
             <form onSubmit={handleSubmit}>
                 <label>Blog Title:</label>
@@ -95,8 +102,25 @@ const Create = ({ onAuthSuccess }) => {
 
                 {/* Custom image uploader | Send image array to be stored */}
                 <ImageUploader setImages={setImages} />
+
+                <br />
+                <hr />
+                <br />
             
-                {!isPending && <button type="submit">Add Blog</button>}
+                {!isPending &&
+                    // Disables button and alerts guest users prior to clearing fields 
+                    guestUser ? (
+                        <>
+                        <b>Signing up will clear your current draft</b>
+                        <br />
+                        <button type="button" onClick={() => guestSignUp(navigate)}>
+                            Sign up to Post
+                        </button>
+                        </>
+                    ) :
+                
+                    <button type="submit" disabled={!guestUser} >Add Blog</button>
+                }
                 {isPending && <button disabled>Adding Blog...</button>}
                 {error && <p className='error'>{error}</p>}
             </form>

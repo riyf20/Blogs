@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 import BlogList from './BlogList';
-
-
+import Guest from "./Guest";
+import guestProfile from "./guestData/guestProfile";
+import guestBlogs from "./guestData/guestBlogs";
+import guestComments from './guestData/guestComments';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const Profile = () => {
+const Profile = ({guestUser}) => {
 
     // User Details
-    const user = localStorage.getItem('user'); 
+    const user = localStorage.getItem('username'); 
     const token = localStorage.getItem('token'); 
 
     // Profile details 
@@ -28,63 +30,77 @@ const Profile = () => {
 
     // Triggers and cleanups
     const [triggerReload, setTriggerReload] = useState(false); 
-    const [clean, setClean] = useState(false);  
-
+    const [clean, setClean] = useState(false); 
+    
+    // Guest warning booleon
+    const [guestWarning, setguestWarning] = useState(false);
+    
     useEffect(() => {
-        // User data
-        if (!dataLoaded) {
-            fetch(`${process.env.REACT_APP_API_BASE_URL}/api/${user}/data`, {
-                method: 'GET',
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+
+        // Loads demo data for guest users
+        if(guestUser) {
+            setUserData(guestProfile[0]);
+            setBlogs(guestBlogs);
+            setComments(guestComments);
+            setDataLoaded(true);
+            return;
+        } else {
+
+            // Loads User data from database
+            if (!dataLoaded) {
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/api/${user}/data`, {
+                    method: 'GET',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    setUserData(data[0]);
+                    setDataLoaded(true);
+                })
+                .catch(err => console.error('Error fetching user data:', err));
+            }
+
+            // Loads User's blogs + comments
+            if (setDataLoaded) {
+                try {
+                    fetch(`${API_BASE_URL}/api/search?type=author&field=${encodeURIComponent(user)}`, {
+                        method: 'GET',
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                    })
+                    .then((res) => {
+                        if (!res.ok) {
+                            throw new Error('Failed to fetch comments');
+                        }
+                        return res.json();
+                    })
+                    .then((data) => setBlogs(data))
+
+                    fetch(`${API_BASE_URL}/api/search?type=profile&field=${encodeURIComponent(user)}`, {
+                        method: 'GET',
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                    })
+                    .then((res) => {
+                        if (!res.ok) {
+                            throw new Error('Failed to fetch comments');
+                        }
+                        return res.json();
+                    })
+                    .then((data) => setComments(data))
+                } catch (error) {
+                    console.error('Error:', error);
                 }
-            })
-            .then(res => res.json())
-            .then(data => {
-                setUserData(data[0]);
-                setDataLoaded(true);
-            })
-            .catch(err => console.error('Error fetching user data:', err));
-        }
-
-        // User's blogs + comments
-        if (setDataLoaded) {
-            try {
-                fetch(`${API_BASE_URL}/api/search?type=author&field=${encodeURIComponent(user)}`, {
-                    method: 'GET',
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                })
-                .then((res) => {
-                    if (!res.ok) {
-                        throw new Error('Failed to fetch comments');
-                    }
-                    return res.json();
-                })
-                .then((data) => setBlogs(data))
-
-                fetch(`${API_BASE_URL}/api/search?type=profile&field=${encodeURIComponent(user)}`, {
-                    method: 'GET',
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                })
-                .then((res) => {
-                    if (!res.ok) {
-                        throw new Error('Failed to fetch comments');
-                    }
-                    return res.json();
-                })
-                .then((data) => setComments(data))
-            } catch (error) {
-                console.error('Error:', error);
             }
         }
-    }, [ user, token, triggerReload]);
+    }, [ user, token, triggerReload, guestUser]);
 
     useEffect(() => {
         // Set user data
@@ -123,6 +139,13 @@ const Profile = () => {
     };
 
     const saveChanges = async () => {
+
+        // Check to prevent current users to set username to "guest"
+        if (userName==='guest') {
+            setguestWarning(true);
+            return;
+        }
+
         try {
             const newdata = { fName, lName, userName, email, password };
             const response = await fetch(`${API_BASE_URL}/api/profile/${user}/${userID}/update`, {
@@ -153,6 +176,12 @@ const Profile = () => {
 
     return (
         <div className='profile'>
+
+            {/* Conditional guest component | Informational block for guest users */}
+            {guestUser && 
+                <Guest parentElement={'Profile'}/>
+            }
+
             <h2 style={{marginLeft: '10px'}}>Your Profile</h2>
             <div className='profile-container'>
                 {dataLoaded && userData ? (
@@ -188,15 +217,40 @@ const Profile = () => {
                         <div className='profile-items'>
                             <h3>Username</h3>
                             <input 
-                                style={editProfile ? {border: '2px solid black'} : {border: 'transparent'}}
+                                // Dynamically applies style when invalid username was attempted
+                                style={{
+                                    border: guestWarning 
+                                        ? '2px solid red' 
+                                        : editProfile 
+                                            ? '2px solid black' 
+                                            : 'transparent'
+                                }}
                                 type="text" 
                                 value={userName} 
-                                onChange={(e) => setUserName(e.target.value)} 
+                                // Clears warning once users types 
+                                onChange={(e) => 
+                                {
+                                    setUserName(e.target.value);
+                                    setguestWarning(false);
+                                }} 
                                 disabled={!editProfile} 
                             />
+                            {/* Dynamically applies warning message if user attempts to set invalid username */}
+                            {guestWarning ? 
+                                <>
+                                <center className='profilewarningbox'>
+                                    <p className='profileWarning'>Sorry that username is reserved.</p>
+                                    <p className='profileWarning'>Please enter a new username.</p>
+                                </center>
+                                </> 
+                                : 
+                                <></>}
                         </div>
                         
-                        <div className='profile-items password-container'>
+                        <div className='profile-items password-container'
+                            style={{marginTop: guestWarning && '-56px'}}
+                            id='guestWarningBox'
+                        >
                             <h3>Password</h3>
                             <input 
                                 style={editProfile ? {border: '2px solid black'} : {border: 'transparent'}}
@@ -226,11 +280,23 @@ const Profile = () => {
                                 <div className='profile-items'> 
                                 </div>
                                 <div className='profile-items-button'>
-                                    <center><button id='profileSave' onClick={saveChanges}>Save Changes</button></center>
+                                    <center><button id='profileSave' disabled={guestUser} onClick={saveChanges}>Save Changes</button></center>
                                 </div>
                                 <div className='profile-items-button'>
-                                    <center><button id='profileCancel' onClick={toggleEdit}>Cancel</button></center>
+                                    <center><button id='profileCancel' 
+                                    onClick={() => 
+                                        {toggleEdit();
+                                        setguestWarning(false);
+                                        }
+                                    }
+                                    >Cancel</button></center>
                                 </div>
+                                {guestUser && 
+                                <>
+                                    <p className='guestAlert'>You can easily save and manage all of your account credentials!</p>
+                                </> 
+                                }
+                                
                             </>
                         ) : null}
                         
@@ -247,7 +313,7 @@ const Profile = () => {
                 {dataLoaded && userData ? 
                 (<> 
                     {blogs.length > 0 ? 
-                    <BlogList blogs={blogs} profile={true} cleanFunc={cleanUp}/> 
+                    <BlogList blogs={blogs} profile={true} cleanFunc={cleanUp} guestUser={guestUser} /> 
                     : 
                     <><center><h3>You don't have any published post</h3> Create your first post now! <Link to={'/create'}><button id='firstPost'>Here</button></Link> </center></>} 
                 
@@ -263,14 +329,13 @@ const Profile = () => {
                 {dataLoaded && userData ? 
                 (<> 
                     {comments.length > 0 ? 
-                    <BlogList blogs={comments} comment={true} profile={true} cleanFunc={cleanUp}/> 
+                    <BlogList blogs={comments} comment={true} profile={true} cleanFunc={cleanUp} guestUser={guestUser}/> 
                     : 
                     <><center><h3>You have not commented yet</h3></center></>} 
                 
                 </>) 
                 : (<></>) }
             </div>
-            
         </div>
     );
 };

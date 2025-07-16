@@ -32,21 +32,46 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // Used for global console debugging 
 const debug = false; 
-
-// Creates connection
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  port: process.env.DB_PORT,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-});
+let db; 
 
 // Connection attempt
-db.connect((err) => {
-    if (err) throw err;
-    {debug && console.log('Connected to RDS database')};
-});
+if (debug) {
+  // Connects to local database for internal functions
+  db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    port: process.env.DB_PORT,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
+  });
+
+  db.connect((err) => {
+    if (err) {
+      console.error('Error connecting to the local database:', err);
+      throw err;
+    }
+    console.log('Connected to Local RDS database');
+  });
+
+} else {
+  // Connects to main database for public functions
+  db = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    port: process.env.DB_PORT,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
+  });
+
+  db.connect((err) => {
+    if (err) {
+      console.error('Error connecting to database:', err);
+      throw err;
+    }
+  });
+}
+
+
 
 // Login user
 app.post('/api/login', (req, res) => {
@@ -68,15 +93,37 @@ app.post('/api/login', (req, res) => {
       const match = await bcrypt.compare(password, user.password_hash);
   
       if (match) {
+        // New payload object
+        const tokenPayload = {
+          id: user.id,
+          username: user.username,
+          role: 'user',
+          isGuest: false,
+        };
+
         // Generate JWT token
-        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' });
   
         // Send the token to the client
-        res.json({ token, username });
+        res.json({ token, username:user.username, user:tokenPayload });
       } else {
         res.status(401).json({ message: 'Incorrect password' });
       }
     });
+});
+
+// Logs in Guest user | Generates token
+app.post('/api/login/guest-mode', (req, res) => {
+
+    const guestUser = {
+      id: `guest-${Date.now()}`,
+      role: 'guest',
+      isGuest: true,
+    };
+    
+    const token = jwt.sign(guestUser, JWT_SECRET, { expiresIn: '1h' });
+
+    res.json({ token, user: guestUser });
 });
 
 // Register new user

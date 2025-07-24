@@ -6,7 +6,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const BlogList = ({blogs, title, comment, profile, cleanFunc, guestUser}) => {
 
-    const user = localStorage.getItem('user');  
+    const user = localStorage.getItem('username');  
     const token = localStorage.getItem('token'); 
 
     const [modalOpen, setModalOpen] = useState(false);  // Controls the visibility of a modal

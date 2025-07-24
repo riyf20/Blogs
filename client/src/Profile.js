@@ -162,7 +162,14 @@ const Profile = ({guestUser}) => {
             }
     
             // Change username in case it was altered
-            localStorage.setItem('user', userName);
+            localStorage.setItem('username', userName);
+
+            // Gets user object --> changes username
+            const userObject = JSON.parse(localStorage.getItem('user')); 
+            userObject.username = userName;
+
+            // Sends back to local storage
+            localStorage.setItem('user', JSON.stringify(userObject));
             setEditProfile(false);
 
         } catch (err) {

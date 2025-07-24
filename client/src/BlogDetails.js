@@ -16,7 +16,7 @@ const BlogDetails = ({guestUser}) => {
   const { data: blog, error, isLoading } = useFetch(`${API_BASE_URL}/api/blogs/` + id); 
 
   // User Details
-  const user = localStorage.getItem('user');  
+  const user = localStorage.getItem('username');  
   const token = localStorage.getItem('token'); 
 
   // States
@@ -496,8 +496,8 @@ const BlogDetails = ({guestUser}) => {
                       // Reusing imageuploader for new images + Cancel and confirm edits button
                       <> 
                         <ImageUploader setImages={setNewImages} appendingImages={true} /> {/* Pass setImages to ImageUploader */}
-                        <button id="cancelbutton" onClick={handleCancel}>Cancel</button>
-                        <button id="confirmbutton" onClick={() => notifSetup(1)}>Confirm</button> 
+                        <button id="confirmbutton" onClick={() => notifSetup(1)}>Confirm</button>
+                        <button id="cancelbutton" onClick={handleCancel}>Cancel</button> 
                         {/* will reroute to the handleEditConfirm function*/}
                       </>
                     }

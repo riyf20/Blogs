@@ -23,7 +23,7 @@ const Create = ({ onAuthSuccess, guestUser }) => {
         e.preventDefault();
 
         // Blog details
-        const author = localStorage.getItem('user');
+        const author = localStorage.getItem('username');
         const token = localStorage.getItem('token');
         const blog = { title, body, author };
 
@@ -119,7 +119,7 @@ const Create = ({ onAuthSuccess, guestUser }) => {
                         </>
                     ) :
                 
-                    <button type="submit" disabled={!guestUser} >Add Blog</button>
+                    <button type="submit" disabled={guestUser} >Add Blog</button>
                 }
                 {isPending && <button disabled>Adding Blog...</button>}
                 {error && <p className='error'>{error}</p>}

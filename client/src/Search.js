@@ -4,7 +4,6 @@ import Guest from "./Guest";
 
 const Search = ({guestUser}) => {
     const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-    const user = localStorage.getItem('user');
     const token = localStorage.getItem('token');
 
     const [query, setQuery] = useState('');

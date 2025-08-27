@@ -236,7 +236,7 @@
     margin-bottom: 30px;
 }
   
-.create input, .create textarea, .comment textarea, .editbox textarea, .comment-item textarea {
+.create input, .create textarea, .comment textarea, .editbox textarea, .editbox input, .comment-item textarea {
     width: 100%;
     padding: 6px 10px;
     margin: 10px 0;

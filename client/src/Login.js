@@ -18,10 +18,11 @@ const Login = ({onAuthSuccess}) => {
         try {
             {debug && console.log("Attempting database login")};
 
+            const type="web"
             const response = await fetch(`${API_BASE_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ username, password, type }),
             });
 
             const data = await response.json();
@@ -32,6 +33,7 @@ const Login = ({onAuthSuccess}) => {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('username', data.username);
                 localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('refreshtoken', data.refreshToken);
                 {debug && console.log('Login successful!')};
                 onAuthSuccess();
                 navigate('/'); 

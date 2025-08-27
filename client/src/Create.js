@@ -119,7 +119,7 @@ const Create = ({ onAuthSuccess, guestUser }) => {
                         </>
                     ) :
                 
-                    <button type="submit" disabled={guestUser} >Add Blog</button>
+                    !isPending && <button type="submit" disabled={guestUser} >Add Blog</button> 
                 }
                 {isPending && <button disabled>Adding Blog...</button>}
                 {error && <p className='error'>{error}</p>}

@@ -13,7 +13,7 @@ const BlogDetails = ({guestUser}) => {
   const navigate = useNavigate();  // Navigation
 
   // Original Fetch
-  const { data: blog, error, isLoading } = useFetch(`${API_BASE_URL}/api/blogs/` + id); 
+  const { data: blog, error, isLoading, refetch } = useFetch(`${API_BASE_URL}/api/blogs/` + id); 
 
   // User Details
   const user = localStorage.getItem('username');  
@@ -31,6 +31,7 @@ const BlogDetails = ({guestUser}) => {
   const [newimages, setNewImages] = useState([]);  // New images added 
   const [commentsUpdated, setCommentsUpdated] = useState(false);  // Tracks if comments have been updated
   const [edit, setEdit] = useState(false);  // Toggle for edit mode
+  const [editTitle, setEditTitle] = useState('');  // Content of the blog post in edit mode
   const [editBody, setEditBody] = useState('');  // Content of the blog post in edit mode
   const [editComment, setEditComment] = useState(false);  // Toggle for comment edit mode
   const [editCommentIndex, setEditCommentIndex] = useState(-1);  // Index of the comment being edited
@@ -113,6 +114,7 @@ const BlogDetails = ({guestUser}) => {
 
   // Toggles edit box
   const handleEdit = () => {
+    setEditTitle(blog.title)
     setEditBody(blog.body);
     setEdit(!edit);
   };
@@ -192,14 +194,13 @@ const BlogDetails = ({guestUser}) => {
   
     try {
       // Update the blog post first
-      const edits = { editBody };
       const response = await fetch(`${API_BASE_URL}/api/blogs/${id}/update`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(edits)
+        body: JSON.stringify({editBody, editTitle})
       });
   
       if (response.ok) {
@@ -240,6 +241,7 @@ const BlogDetails = ({guestUser}) => {
         setUpdating(false)
         setHasImages(true); 
         setEdit(!edit)
+        refetch()
       } else {
         // Blog post error
         throw new Error('Failed to update the blog post');
@@ -387,10 +389,16 @@ const BlogDetails = ({guestUser}) => {
         <article>
           {/* Toggles edit views */}
           <div className="editbox">
-            <h2>{blog.title}</h2>
             {
               edit ? 
               <>
+                <input
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                >
+                </input>
+              
                 {/* Textbox for editing blog body */}
                 <textarea 
                   required
@@ -444,6 +452,7 @@ const BlogDetails = ({guestUser}) => {
               :
               <>
                 {/* Regular view */}
+                <h2>{blog.title}</h2>
                 <p>Written by: {blog.author}</p>
                 <div className="artbody" >{formatText(blog.body)}</div>
                 <div className="piccontainer">
@@ -454,7 +463,7 @@ const BlogDetails = ({guestUser}) => {
                             (images.map((image, index) => (
                               <img
                                 key={index}
-                                src={`data:image/jpeg;base64,${image.image_blob}`}
+                                src={`data:image/jpeg;base64,${image.image_blob}`}  //{image.fileUrl?.startsWith("file://") ? image.base64 : image.fileUrl}
                                 alt={`Blog Image ${index + 1}`}
                                 className="blog-image"
                               />

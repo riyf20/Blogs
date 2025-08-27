@@ -29,6 +29,7 @@ app.use(cors(corsOptions));
 
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
 // Used for global console debugging 
 const debug = false; 
@@ -75,8 +76,8 @@ if (debug) {
 
 // Login user
 app.post('/api/login', (req, res) => {
-    {debug && console.log("logging in")};
-    const { username, password } = req.body;
+    // {debug && console.log("logging in")};
+    const { username, password, type } = req.body;
   
     db.query('SELECT * FROM Users WHERE username = ?', [username], async (err, results) => {
       if (err) {
@@ -87,7 +88,6 @@ app.post('/api/login', (req, res) => {
       }
   
       const user = results[0];
-      const username = user.username
   
       // Compare provided password with stored hashed password
       const match = await bcrypt.compare(password, user.password_hash);
@@ -102,15 +102,57 @@ app.post('/api/login', (req, res) => {
         };
 
         // Generate JWT token
-        const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' });
-  
-        // Send the token to the client
-        res.json({ token, username:user.username, user:tokenPayload });
+        const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '15m' });
+        const refreshToken = jwt.sign(tokenPayload, JWT_REFRESH_SECRET, { expiresIn: '7d' });
+
+        {debug && console.log("15 minute acces to user = ", username )}
+
+        // Store refresh token in DB
+        db.query('INSERT INTO RefreshTokens (userId, token, type, expiresAt) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))', [user.id, refreshToken, type], (err) => {
+          if (err) {
+            console.error('Error storing refresh token:', err);
+            return res.status(500).json({ message: 'Internal server error' });
+          }
+
+          // Send tokens to client only after successful DB insert
+          res.json({ token, username: user.username, user: tokenPayload, refreshToken });
+        });
+
       } else {
         res.status(401).json({ message: 'Incorrect password' });
       }
     });
 });
+
+app.post('/api/refreshtoken', (req, res) => {
+  const { refreshToken, userID, username } = req.body;
+
+  db.query('SELECT * FROM RefreshTokens WHERE userid = ? AND token = ?', [userID, refreshToken], (err, results) => {
+    if (err) {
+      console.error('Refresh token error:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+   jwt.verify(refreshToken, JWT_REFRESH_SECRET, (err, decoded) => {
+      if (err) {
+        console.log(refreshToken)
+        console.log("Refresh token invalid or expired:", err.message);
+        return res.status(403).json({ message: 'Refresh token expired or invalid' });
+      }
+      const tokenPayload = {
+        id: userID,
+        username,
+        role: 'user',
+        isGuest: false,
+      };
+
+      const newToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '15m' });
+
+     {debug && console.log("Refresh token valid — 15min access to user = ", username)}
+      res.json({ newToken });
+    });
+  });
+})
 
 // Logs in Guest user | Generates token
 app.post('/api/login/guest-mode', (req, res) => {
@@ -333,14 +375,14 @@ app.post('/api/blogs/post', authenticateToken, (req, res) => {
 
 // Endpoint: Post images for blog
 app.post('/api/images/upload', authenticateToken, (req, res) => {
-  const { blogId, blogAuthor, imageBlob } = req.body;
+  const { blogId, blogAuthor, imageBlob, fileUri } = req.body;
 
   // Uses base64 for images
   const buffer = Buffer.from(imageBlob, 'base64');
 
   db.query(
-    'INSERT INTO `Images` (`blogid`, `author`, `image_blob`) VALUES (?, ?, ?)', 
-    [blogId, blogAuthor, buffer], 
+    'INSERT INTO `Images` (`blogid`, `author`, `image_blob`, `fileUrl`) VALUES (?, ?, ?, ?)', 
+    [blogId, blogAuthor, buffer, fileUri], 
     (err, results) => {
       if (err) {
         console.error('Error inserting new image:', err);
@@ -421,10 +463,10 @@ app.delete('/api/blogs/:id/images/delete', authenticateToken, async (req, res) =
   try {
     // Use helper function to delete
     await deleteImagesFromDatabase(blogId, images);
-    res.status(200).send('Images deleted successfully');
+    res.status(200).send({message: 'Images deleted successfully'});
   } catch (err) {
     console.error('Error deleting images:', err);
-    res.status(500).send('Failed to delete images');
+    res.status(500).send({message: 'Failed to delete images'});
   }
 });
 
@@ -448,11 +490,11 @@ async function deleteImagesFromDatabase(blogId, imageIds) {
 // Endpoint: Updates blog details
 app.post('/api/blogs/:id/update', (req, res) => {
   const id = req.params.id;
-  const { editBody } = req.body; 
+  const { editBody, editTitle } = req.body; 
 
-    db.query('UPDATE `Blogs` set body=? where id=? ', [editBody, id], (err, results) => {
+    db.query('UPDATE `Blogs` set body=?, title=? where id=? ', [editBody, editTitle, id], (err, results) => {
       if (err) {
-        return res.status(500).json({ message: 'Error fetching comments' });
+        return res.status(500).json({ message: err.message });
       }
       res.json(results);
     });
@@ -467,7 +509,7 @@ app.post('/api/blogs/:postid/:id/update', authenticateToken, (req, res) => {
 
   db.query('UPDATE `Comments` set body=? where postid=? AND id=?', [editCommentBody, postid, id], (err, results) => {
     if (err) {
-      return res.status(500).json({ message: 'Error updating comments' });
+      return res.status(500).json({ message: err.message });
     }
     res.json(results);
   });
@@ -544,7 +586,7 @@ app.post('/api/profile/:user/:userID/update',authenticateToken, async (req, res)
             }
         );
     } catch (err) {
-        res.status(500).json({ message: 'Error hashing password' });
+        res.status(500).json({ message: err.message });
     }
 });
 
@@ -595,9 +637,67 @@ app.delete('/api/profile/:user/:commentId/:postid/delete', authenticateToken, as
 
 });
 
+// Endpoint: Reports a comment
+app.post('/api/blogs/:postId/:commentId/report', authenticateToken, (req, res) => {
+  const postId = req.params.postId; 
+  const commentId = req.params.commentId; 
+  const { userId, username } = req.body; 
+
+  db.query(
+    'INSERT INTO `ReportedComments` (`user_id`, `username`, `postid`, `commentid`) VALUES (?,?,?,?)',
+    [userId, username, postId, commentId],
+    (err, results) => {
+      if (err) {
+        console.error('Error reporting comment:', err);
+        return res.status(500).json({ message: 'Error reporting comment' });
+      }
+
+      // Successful insertion
+      res.status(201).json({
+        message: 'Comment reported successfully!',
+      });
+    }
+  );
+});
+
+// Endpoint: Reports a blog
+app.post('/api/blogs/:blogId/report', authenticateToken, (req, res) => {
+  const blogId = req.params.blogId; 
+  const { userId, username } = req.body; 
+
+  db.query(
+    'INSERT INTO `ReportedBlogs` (`user_id`, `username`, `blogid`) VALUES (?,?,?)',
+    [userId, username, blogId],
+    (err, results) => {
+      if (err) {
+        console.error('Error reporting comment:', err);
+        return res.status(500).json({ message: 'Error reporting blog' });
+      }
+
+      // Successful insertion
+      res.status(201).json({
+        message: 'Blog reported successfully!',
+      });
+    }
+  );
+});
+
+app.post('/api/refreshtoken/delete', authenticateToken, (req, res) => {
+  const { refreshToken, userID } = req.body;
+  
+  db.query('DELETE from RefreshTokens where userid=? AND token=?', [userID, refreshToken], (err, results) => {
+      if (err) {
+        res.status(500).json({ message: 'Error deleting refresh token' });
+      }
+
+      // Successful deletion
+      res.json({ message: 'Refresh token deleted successfully!' });
+  });
+})
+
 { debug &&
   // If debug is true will use localhost 
-app.listen(3001, () => {
+app.listen(3001, '0.0.0.0', () => {
    console.log('Server is running on port 3001')
 });
 };

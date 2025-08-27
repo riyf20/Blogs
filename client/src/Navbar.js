@@ -1,32 +1,84 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { json, Link, useLocation, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import React, { useState, useEffect } from 'react';
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 
 const Navbar = ({ onAuthSuccess }) => {
     // Hamburger menu state for mobile view
     const [isMenuOpen, setIsMenuOpen] = useState(false); 
     const navigate = useNavigate();
     const location = useLocation(); 
+    const token = localStorage.getItem('token');
+    const refresh = localStorage.getItem('refreshtoken')
+    const userObject = localStorage.getItem('user')
+    const user = JSON.parse(userObject)
+
     
     useEffect(() => {
-        const checkTokenExpiration = () => {
-            const token = localStorage.getItem('token');
-            if (token) {
+        const checkTokenExpiration = async () => {  
+            
+            if (token && user) {
                 const decodedToken = jwtDecode(token);
                 const currentTime = Date.now() / 1000;
-
+                const {id, username} = user
                 if (decodedToken.exp < currentTime) {
-                    handleLogout(true);
+                    try {
+
+                        const response = await fetch(`${API_BASE_URL}/api/refreshtoken`, {
+                            method: 'POST',
+                            headers: {
+                            "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({refreshToken:refresh, userID:id, username})
+                        })
+
+                        const data = await response.json();
+                        const newToken = data.newToken
+
+                        localStorage.setItem('token', newToken)
+
+                        if (!response.ok) throw new Error(data.message || 'Refresh Token Failed');
+                        return data;
+                    } catch (err) {
+                        console.error(err.message)
+                        handleLogout(true);
+                    }
                 }
             }
         };
         checkTokenExpiration(); 
     }, [location, navigate]);
 
+
+
+    const cleanBackend = async () => {
+        const refreshToken = localStorage.getItem('refreshtoken')
+        const userData = localStorage.getItem('user')
+        const user = JSON.parse(userData)
+        const userID = user.id
+
+        const response = await fetch(`${API_BASE_URL}/api/refreshtoken/delete`, {
+            method: 'POST',
+            headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({refreshToken, userID})
+        })
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Deleting refresh Token failed');
+        return data;
+
+    }
+
     const handleLogout = (expToken) => {
+        cleanBackend()
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('username');
+        localStorage.removeItem('refreshtoken');
         if (!expToken) {
             onAuthSuccess();
         } else {

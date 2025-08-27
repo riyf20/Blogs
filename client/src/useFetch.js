@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 
-const useFetch = (url, method = 'GET') => {
+const useFetch = (url, method = 'GET', autoFetch=true) => {
     
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null)    
     
-    useEffect(() => {  
+    const fetchData = () => {
 
         const abortCont = new AbortController();
 
@@ -32,10 +32,15 @@ const useFetch = (url, method = 'GET') => {
                 })  
 
         return () => abortCont.abort();
+    }
 
-    }, [url, method]);
+    useEffect(() => {
+        if(autoFetch) {
+            fetchData();
+        }
+    }, [])
 
-    return {data, isLoading, error}
+    return {data, isLoading, error, refetch: fetchData}
 }
 
 export default useFetch;

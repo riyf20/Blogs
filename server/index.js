@@ -29,6 +29,7 @@ app.use(cors(corsOptions));
 
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
 // Used for global console debugging 
 const debug = false; // database
@@ -76,8 +77,8 @@ if (debug) {
 
 // Login user
 app.post('/api/login', (req, res) => {
-    {debug && console.log("logging in")};
-    const { username, password } = req.body;
+    // {debug && console.log("logging in")};
+    const { username, password, type } = req.body;
   
     db.query('SELECT * FROM Users WHERE username = ?', [username], async (err, results) => {
       if (err) {
@@ -88,7 +89,6 @@ app.post('/api/login', (req, res) => {
       }
   
       const user = results[0];
-      const username = user.username
   
       // Compare provided password with stored hashed password
       const match = await bcrypt.compare(password, user.password_hash);
@@ -103,15 +103,57 @@ app.post('/api/login', (req, res) => {
         };
 
         // Generate JWT token
-        const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' });
-  
-        // Send the token to the client
-        res.json({ token, username:user.username, user:tokenPayload });
+        const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '15m' });
+        const refreshToken = jwt.sign(tokenPayload, JWT_REFRESH_SECRET, { expiresIn: '7d' });
+
+        {debug && console.log("15 minute acces to user = ", username )}
+        
+        // Store refresh token in DB
+        db.query('INSERT INTO RefreshTokens (userId, token, type, expiresAt) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))', [user.id, refreshToken, type], (err) => {
+          if (err) {
+            console.error('Error storing refresh token:', err);
+            return res.status(500).json({ message: 'Internal server error' });
+          }
+
+          // Send tokens to client only after successful DB insert
+          res.json({ token, username: user.username, user: tokenPayload, refreshToken });
+
+        });
       } else {
         res.status(401).json({ message: 'Incorrect password' });
       }
     });
 });
+
+app.post('/api/refreshtoken', (req, res) => {
+  const { refreshToken, userID, username } = req.body;
+
+  db.query('SELECT * FROM RefreshTokens WHERE userid = ? AND token = ?', [userID, refreshToken], (err, results) => {
+    if (err) {
+      console.error('Refresh token error:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+   jwt.verify(refreshToken, JWT_REFRESH_SECRET, (err, decoded) => {
+      if (err) {
+        console.log(refreshToken)
+        console.log("Refresh token invalid or expired:", err.message);
+        return res.status(403).json({ message: 'Refresh token expired or invalid' });
+      }
+      const tokenPayload = {
+        id: userID,
+        username,
+        role: 'user',
+        isGuest: false,
+      };
+
+      const newToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '15m' });
+
+     {debug && console.log("Refresh token valid — 15min access to user = ", username)}
+      res.json({ newToken });
+    });
+  });
+})
 
 // Logs in Guest user | Generates token
 app.post('/api/login/guest-mode', (req, res) => {
@@ -334,14 +376,14 @@ app.post('/api/blogs/post', authenticateToken, (req, res) => {
 
 // Endpoint: Post images for blog
 app.post('/api/images/upload', authenticateToken, (req, res) => {
-  const { blogId, blogAuthor, imageBlob } = req.body;
+  const { blogId, blogAuthor, imageBlob, fileUri } = req.body;
 
   // Uses base64 for images
   const buffer = Buffer.from(imageBlob, 'base64');
 
   db.query(
-    'INSERT INTO `Images` (`blogid`, `author`, `image_blob`) VALUES (?, ?, ?)', 
-    [blogId, blogAuthor, buffer], 
+    'INSERT INTO `Images` (`blogid`, `author`, `image_blob`, `fileUrl`) VALUES (?, ?, ?, ?)', 
+    [blogId, blogAuthor, buffer, fileUri], 
     (err, results) => {
       if (err) {
         console.error('Error inserting new image:', err);
@@ -422,10 +464,10 @@ app.delete('/api/blogs/:id/images/delete', authenticateToken, async (req, res) =
   try {
     // Use helper function to delete
     await deleteImagesFromDatabase(blogId, images);
-    res.status(200).send('Images deleted successfully');
+    res.status(200).send({message: 'Images deleted successfully'});
   } catch (err) {
     console.error('Error deleting images:', err);
-    res.status(500).send('Failed to delete images');
+    res.status(500).send({message: 'Failed to delete images'});
   }
 });
 

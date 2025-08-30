@@ -491,9 +491,9 @@ async function deleteImagesFromDatabase(blogId, imageIds) {
 // Endpoint: Updates blog details
 app.post('/api/blogs/:id/update', (req, res) => {
   const id = req.params.id;
-  const { editBody } = req.body; 
+  const { editBody, editTitle } = req.body; 
 
-    db.query('UPDATE `Blogs` set body=? where id=? ', [editBody, id], (err, results) => {
+    db.query('UPDATE `Blogs` set body=?, title=? where id=? ', [editBody, editTitle, id], (err, results) => {
       if (err) {
         return res.status(500).json({ message: 'Error fetching comments' });
       }
@@ -587,7 +587,7 @@ app.post('/api/profile/:user/:userID/update',authenticateToken, async (req, res)
             }
         );
     } catch (err) {
-        res.status(500).json({ message: 'Error hashing password' });
+        res.status(500).json({ message: err.message });
     }
 });
 
@@ -638,8 +638,66 @@ app.delete('/api/profile/:user/:commentId/:postid/delete', authenticateToken, as
 
 });
 
+// Endpoint: Reports a comment
+app.post('/api/blogs/:postId/:commentId/report', authenticateToken, (req, res) => {
+  const postId = req.params.postId; 
+  const commentId = req.params.commentId; 
+  const { userId, username } = req.body; 
+
+  db.query(
+    'INSERT INTO `ReportedComments` (`user_id`, `username`, `postid`, `commentid`) VALUES (?,?,?,?)',
+    [userId, username, postId, commentId],
+    (err, results) => {
+      if (err) {
+        console.error('Error reporting comment:', err);
+        return res.status(500).json({ message: 'Error reporting comment' });
+      }
+
+      // Successful insertion
+      res.status(201).json({
+        message: 'Comment reported successfully!',
+      });
+    }
+  );
+});
+
+// Endpoint: Reports a blog
+app.post('/api/blogs/:blogId/report', authenticateToken, (req, res) => {
+  const blogId = req.params.blogId; 
+  const { userId, username } = req.body; 
+
+  db.query(
+    'INSERT INTO `ReportedBlogs` (`user_id`, `username`, `blogid`) VALUES (?,?,?)',
+    [userId, username, blogId],
+    (err, results) => {
+      if (err) {
+        console.error('Error reporting comment:', err);
+        return res.status(500).json({ message: 'Error reporting blog' });
+      }
+
+      // Successful insertion
+      res.status(201).json({
+        message: 'Blog reported successfully!',
+      });
+    }
+  );
+});
+
+app.post('/api/refreshtoken/delete', authenticateToken, (req, res) => {
+  const { refreshToken, userID } = req.body;
+  
+  db.query('DELETE from RefreshTokens where userid=? AND token=?', [userID, refreshToken], (err, results) => {
+      if (err) {
+        res.status(500).json({ message: 'Error deleting refresh token' });
+      }
+
+      // Successful deletion
+      res.json({ message: 'Refresh token deleted successfully!' });
+  });
+})
+
 { local &&
-  // If debug is true will use localhost 
+  // If local is true will use localhost 
   app.listen(3001, '0.0.0.0', () => {
     console.log('Server is running on port 3001')
   });

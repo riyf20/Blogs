@@ -31,7 +31,8 @@ app.use(cors(corsOptions));
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Used for global console debugging 
-const debug = false; 
+const debug = false; // database
+const local = false; // api url
 let db; 
 
 // Connection attempt
@@ -595,11 +596,11 @@ app.delete('/api/profile/:user/:commentId/:postid/delete', authenticateToken, as
 
 });
 
-{ debug &&
+{ local &&
   // If debug is true will use localhost 
-app.listen(3001, () => {
-   console.log('Server is running on port 3001')
-});
+  app.listen(3001, '0.0.0.0', () => {
+    console.log('Server is running on port 3001')
+  });
 };
 
 module.exports = app;
